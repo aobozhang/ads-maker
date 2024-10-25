@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('path')->nullable();
             $table->string('thumb')->nullable();
             $table->string('url')->nullable();
-            $table->json('config')->nullable()->default([]);
-            $table->json('payload')->nullable()->default([]);
+            $table->json('config')->nullable();
+            $table->json('payload')->nullable();
             $table->boolean('is_share')->nullable()->default(false);
             $table->string('status')->nullable();
             $table->softDeletes();

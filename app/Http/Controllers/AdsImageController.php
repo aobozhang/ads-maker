@@ -3,16 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\AdsImage;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class AdsImageController extends Controller
 {
+
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        return Inertia::render('AdsImage/Index', [
+            'data' => fn() => AdsImage::orderBy('created_at', 'desc')->paginate(30),
+        ]);
     }
 
     /**
@@ -28,7 +33,25 @@ class AdsImageController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $name = Carbon::now()->format('Ymd-His-u');
+        $path = $request->file('file')->storePubliclyAs(
+            'ads-images',
+            $name . '.jpg',
+            'public'
+        );
+
+        $data = $request->except(['file']);
+
+        $data['name'] = $name;
+        $data['path'] = asset('storage/' . $path);
+
+        if ($request->user()) {
+            $data['user_id'] = $request->user()->id;
+        }
+
+        $adsImage = AdsImage::create($data);
+
+        return $adsImage;
     }
 
     /**
@@ -36,7 +59,10 @@ class AdsImageController extends Controller
      */
     public function show(AdsImage $adsImage)
     {
-        //
+        return Inertia::render('AdsImage/Index', [
+            'data'     => fn()     => AdsImage::orderBy('created_at', 'desc')->paginate(30),
+            'adsImage' => $adsImage,
+        ]);
     }
 
     /**

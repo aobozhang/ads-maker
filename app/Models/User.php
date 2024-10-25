@@ -42,7 +42,16 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password'          => 'hashed',
         ];
+    }
+
+    /**
+     * Get all of the ads-image for the User
+     *
+     */
+    public function ads_image(): HasMany
+    {
+        return $this->hasMany(AdsImage::class, 'user_id', 'id');
     }
 }
