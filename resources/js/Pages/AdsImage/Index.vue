@@ -4,7 +4,8 @@ import { toBlob, toJpeg } from 'html-to-image';
 import GradientText from "@/Components/GradientText.vue";
 import moment from 'moment'
 import _ from 'lodash-es';
-import { Link, useForm } from '@inertiajs/vue3'
+import { Link, useForm } from '@inertiajs/vue3';
+import Element from "@/Components/Element.vue";
 
 const props = defineProps({
     data: {
