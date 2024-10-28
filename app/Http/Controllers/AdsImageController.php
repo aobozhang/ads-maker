@@ -16,7 +16,7 @@ class AdsImageController extends Controller
     public function index(Request $request)
     {
         return Inertia::render('AdsImage/Index', [
-            'data' => fn() => AdsImage::orderBy('created_at', 'desc')->paginate(30),
+            'list' => fn() => AdsImage::orderBy('created_at', 'desc')->paginate(30),
         ]);
     }
 
@@ -25,7 +25,7 @@ class AdsImageController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('AdsImage/CreateAndEdit');
     }
 
     /**
@@ -43,7 +43,8 @@ class AdsImageController extends Controller
         $data = $request->except(['file']);
 
         $data['name'] = $name;
-        $data['path'] = asset('storage/' . $path);
+        $data['path'] = storage_path('app/public/' . $path);
+        $data['url']  = asset('storage/' . $path);
 
         if ($request->user()) {
             $data['user_id'] = $request->user()->id;
@@ -60,9 +61,17 @@ class AdsImageController extends Controller
     public function show(AdsImage $adsImage)
     {
         return Inertia::render('AdsImage/Index', [
-            'data'     => fn()     => AdsImage::orderBy('created_at', 'desc')->paginate(30),
-            'adsImage' => $adsImage,
+            'list' => fn() => AdsImage::orderBy('created_at', 'desc')->paginate(30),
+            'item' => $adsImage,
         ]);
+    }
+
+    /**
+     * download the specified resource image.
+     */
+    public function down(AdsImage $adsImage)
+    {
+        return response()->download($adsImage->path);
     }
 
     /**

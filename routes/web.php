@@ -14,8 +14,10 @@ Route::get('/', function () {
         'phpVersion'     => PHP_VERSION,
     ]);
 });
-
-Route::resource('ads-image', AdsImageController::class);
+Route::prefix('ads-image')->name('ads-image.')->group(function () {
+    Route::resource('/', AdsImageController::class);
+    Route::get('/{id}/down', [AdsImageController::class, 'down'])->name('down');
+});
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
