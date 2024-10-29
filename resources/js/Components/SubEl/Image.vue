@@ -1,15 +1,6 @@
 <script setup>
 import { ref, computed, inject } from 'vue';
 import _ from 'lodash-es';
-import Text from "./SubEl/Text.vue";
-import Image from "./SubEl/Image.vue";
-import Main from "./SubEl/Main.vue";
-
-const cpt = {
-    text: Text,
-    image: Image,
-    main: Main,
-}
 
 const props = defineProps({
     item: {
@@ -19,7 +10,7 @@ const props = defineProps({
 });
 
 const item = ref(props.item);
-const { el_model, el_controller } = inject('GLOBAL_CREATE_AND_EDIT');
+const { el_model } = inject('GLOBAL_CREATE_AND_EDIT');
 
 const vDraggable = (el, binding) => {
 
@@ -79,5 +70,25 @@ const editMe = (e) => {
 </script>
 
 <template>
-    <component :is="cpt[item.type]" :item="item" />
+    <div class="absolute" @click="editMe">
+
+        <!-- configuration -->
+        <Teleport defer to="#configContainer">
+            <div v-if="item.type === 'text'">
+                <label for="text-content">内容</label>
+                <textarea id="text-content">
+
+                </textarea>
+            </div>
+        </Teleport>
+
+        <span v-if="item.text" class="select-none">{{ item.text }}</span>
+        <img v-if="item.image" :src="item.image" alt="item.image">
+        <div class="relative w-full h-full">
+            <!-- <Element v-for="(el, i) in elements" :key="i" :item="el" class="absolute -translate-x-1/2 -translate-y-1/2"
+                v-draggable>
+            </Element> -->
+        </div>
+        <slot />
+    </div>
 </template>

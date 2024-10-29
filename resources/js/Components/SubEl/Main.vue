@@ -1,15 +1,7 @@
 <script setup>
 import { ref, computed, inject } from 'vue';
 import _ from 'lodash-es';
-import Text from "./SubEl/Text.vue";
-import Image from "./SubEl/Image.vue";
-import Main from "./SubEl/Main.vue";
-
-const cpt = {
-    text: Text,
-    image: Image,
-    main: Main,
-}
+import { watch } from 'vue';
 
 const props = defineProps({
     item: {
@@ -53,8 +45,7 @@ const vDraggable = (el, binding) => {
         el.style.top = `${y}px`;
         el.style.left = `${x}px`;
 
-        _.set(item.value, `prop.style.left`, el.style.left);
-        _.set(item.value, `prop.style.top`, el.style.top);
+        _.set(item.value, `style`, el.style.cssText);
     });
 
     document.addEventListener('mouseup', () => {
@@ -70,6 +61,14 @@ const clk = (e) => {
     emit('clk', e);
 }
 
+watch(
+    item,
+    (newVal, oldVal) => {
+        el_controller.update(item.value.id, item.value);
+    },
+    { deep: true }
+)
+
 const editMe = (e) => {
     e.preventDefault();
 
@@ -79,5 +78,9 @@ const editMe = (e) => {
 </script>
 
 <template>
-    <component :is="cpt[item.type]" :item="item" />
+    <div class="absolute w-full h-full pointer-events-none">
+
+        <div :class="item.class" class="pointer-events-none w-full h-full" :style="`background-image:url(${item.src})`">
+        </div>
+    </div>
 </template>
