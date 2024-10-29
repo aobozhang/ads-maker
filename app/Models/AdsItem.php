@@ -6,22 +6,22 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class AdsImage extends Model
+class AdsItem extends Model
 {
     use SoftDeletes;
 
     protected $fillable = [
         'name',
         'user_id',
+        'type',
         'path',
         'url',
-        'thumb',
-        'config',
+        'tags',
         'payload',
     ];
 
     protected $casts = [
-        'config'  => 'array',
+        'tags'    => 'array',
         'payload' => 'array',
     ];
 

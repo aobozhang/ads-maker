@@ -17,6 +17,9 @@ const vDraggable = (el, binding) => {
 
     let rect = el.getBoundingClientRect();
 
+    const oriWidth = rect.width;
+    const oriHeight = rect.height;
+
     // 设置拖动元素的初始位置和尺寸
     el.draggable = "true";
     let mouseStartX = 0;
@@ -47,12 +50,16 @@ const vDraggable = (el, binding) => {
         el.style.position = 'absolute';
         el.style.top = `${y}px`;
         el.style.left = `${x}px`;
+        el.style.width = `${oriWidth}px`;
+        el.style.height = `${oriHeight}px`;
 
         _.set(item.value, `style`, el.style.cssText);
     });
 
     document.addEventListener('mouseup', () => {
         isDown = false;
+        el.style.width = 'fit-content';
+        el.style.height = 'fit-content';
     });
 };
 
@@ -72,17 +79,11 @@ watch(
     { deep: true }
 )
 
-const editMe = (e) => {
-    e.preventDefault();
-
-    console.log(e.target)
-}
-
 </script>
 
 <template>
     <div v-draggable class="absolute select-none" :style="item.style" :class="[
-        { 'ring ring-indigo-100 ring-offset-1': item.active },
+        { 'ring-1 ring-pink-100 ring-offset-4': item.active },
         item.class,
     ]">
         <!-- configuration -->
@@ -91,22 +92,17 @@ const editMe = (e) => {
                 <!-- content -->
                 <div>
                     <label for="text-content">内容</label>
-                    <textarea id="text-content" v-model="item.innerHTML" :placeholder="item.placeholder">
-
-                    </textarea>
+                    <textarea id="text-content" v-model="item.innerHTML" :placeholder="item.placeholder"></textarea>
                 </div>
                 <!-- class -->
                 <div>
                     <label for="text-class">Class</label>
-                    <textarea id="text-class" v-model="item.class">
-
-                    </textarea>
+                    <textarea id="text-class" v-model="item.class"></textarea>
                 </div>
+                <!-- style -->
                 <div>
                     <label for="text-style">Style</label>
-                    <textarea id="text-style" v-model="item.style">
-
-                    </textarea>
+                    <textarea id="text-style" v-model="item.style"></textarea>
                 </div>
             </div>
         </Teleport>
@@ -116,7 +112,7 @@ const editMe = (e) => {
                 class="absolute top-0 right-0 translate-x-full -translate-y-full bg-black/80 ring ring-white rounded-full aspect-square w-9 grid items-center justify-center">
                 <span class='text-base'>❌</span>
             </div>
-            <div class="whitespace-nowrap" v-html="item.innerHTML ?? item.placeholder"></div>
+            <div class="whitespace-pre-line" v-html="item.innerHTML ?? item.placeholder"></div>
         </div>
     </div>
 </template>

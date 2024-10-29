@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\AdsImage;
+use App\Models\AdsItem;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -50,8 +52,17 @@ class User extends Authenticatable
      * Get all of the ads-image for the User
      *
      */
-    public function ads_image(): HasMany
+    public function ads_images()
     {
         return $this->hasMany(AdsImage::class, 'user_id', 'id');
+    }
+
+    /**
+     * Get all of the ads-image for the User
+     *
+     */
+    public function ads_items()
+    {
+        return $this->hasMany(AdsItem::class, 'user_id', 'id');
     }
 }

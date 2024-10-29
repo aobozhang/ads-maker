@@ -7,6 +7,9 @@ export default {
         "bg-black",
         "bg-white",
         {
+            pattern: /(leading)-(.+)/,
+        },
+        {
             pattern: /(bg|text)-(.+)-([1-9][0|5]0)/,
         },
         {

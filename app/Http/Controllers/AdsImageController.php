@@ -6,6 +6,7 @@ use App\Models\AdsImage;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Str;
 
 class AdsImageController extends Controller
 {
@@ -46,13 +47,9 @@ class AdsImageController extends Controller
         $data['path'] = storage_path('app/public/' . $path);
         $data['url']  = asset('storage/' . $path);
 
-        if ($request->user()) {
-            $data['user_id'] = $request->user()->id;
-        }
+        $adsImage = $request->user()->ads_images()->create($data);
 
-        $adsImage = AdsImage::create($data);
-
-        return $adsImage;
+        return redirect(route('ads-image.show', $adsImage));
     }
 
     /**
@@ -60,8 +57,7 @@ class AdsImageController extends Controller
      */
     public function show(AdsImage $adsImage)
     {
-        return Inertia::render('AdsImage/Index', [
-            'list' => fn() => AdsImage::orderBy('created_at', 'desc')->paginate(30),
+        return Inertia::render('AdsImage/CreateAndEdit', [
             'item' => $adsImage,
         ]);
     }
@@ -69,9 +65,34 @@ class AdsImageController extends Controller
     /**
      * download the specified resource image.
      */
-    public function down(AdsImage $adsImage)
+    public function down(AdsImage $adsImage, $redirect = false)
     {
         return response()->download($adsImage->path);
+    }
+
+    /**
+     * upload file
+     */
+    public function upload(Request $request)
+    {
+        $name = Carbon::now()->format('Ymd-His-u');
+        $path = $request->file('file')->storePubliclyAs(
+            'ads-items',
+            $name . '.jpg',
+            'public'
+        );
+        $from = $request->input('from');
+        $data = $request->except(['file', 'from']);
+
+        $data['name'] = $name;
+        $data['type'] = 'picture';
+        $data['path'] = storage_path('app/public/' . $path);
+        $data['url']  = asset('storage/' . $path);
+
+        $adsImage = $request->user()->ads_items()->create($data);
+
+        return back()->with('upload', $adsImage);
+
     }
 
     /**
@@ -79,7 +100,9 @@ class AdsImageController extends Controller
      */
     public function edit(AdsImage $adsImage)
     {
-        //
+        return Inertia::render('AdsImage/CreateAndEdit', [
+            'item' => $adsImage,
+        ]);
     }
 
     /**
@@ -87,7 +110,21 @@ class AdsImageController extends Controller
      */
     public function update(Request $request, AdsImage $adsImage)
     {
-        //
+        $name = Carbon::now()->format('Ymd-His-u');
+        $path = $request->file('file')->storePubliclyAs(
+            'ads-images',
+            $name . '.jpg',
+            'public'
+        );
+
+        $adsImage->name = $name;
+        $adsImage->path = storage_path('app/public/' . $path);
+        $adsImage->url  = asset('storage/' . $path);
+
+        $adsImage->save();
+
+        return redirect(route('ads-image.show', $adsImage));
+
     }
 
     /**
@@ -95,6 +132,8 @@ class AdsImageController extends Controller
      */
     public function destroy(AdsImage $adsImage)
     {
-        //
+        $adsImage->destroy();
+
+        return redirect(route('ads-image.index'));
     }
 }

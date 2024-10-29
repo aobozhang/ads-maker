@@ -14,9 +14,11 @@ Route::get('/', function () {
         'phpVersion'     => PHP_VERSION,
     ]);
 });
-Route::prefix('ads-image')->name('ads-image.')->group(function () {
-    Route::resource('/', AdsImageController::class);
-    Route::get('/{id}/down', [AdsImageController::class, 'down'])->name('down');
+
+Route::middleware('auth')->prefix('/')->group(function () {
+    Route::resource('/ads-image', AdsImageController::class);
+    Route::get('/ads-image/{ads_image}/down/{redirect?}', [AdsImageController::class, 'down'])->name('ads-image.down');
+    Route::post('/ads-image/upload', [AdsImageController::class, 'upload'])->name('ads-image.upload');
 });
 
 Route::get('/dashboard', function () {

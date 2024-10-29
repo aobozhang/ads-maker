@@ -81,6 +81,12 @@ const importJson = () => {
     input.click();
 }
 
+
+const newTab = (e, url) => {
+    e.preventDefault();
+    window.open(url);
+}
+
 onMounted(() => {
 
 })
@@ -106,11 +112,12 @@ onMounted(() => {
                 <div class="flex flex-row flex-wrap gap-5">
                     <Link :href="route('ads-image.show', item.id)" v-for="(item, index) in list"
                         class="w-32 aspect-square bg-contain bg-no-repeat bg-center border border-gray-100 rounded relative group"
-                        :style="`background-image:url(${item.path})`">
-                    <Link :href="route('ads-image.down', item.id)"
+                        :style="`background-image:url(${item.url})`">
+                    <a target="_blank" :href="route('ads-image.down', item.id)"
+                        @click="newTab($event, route('ads-image.down', item.id))"
                         class="absolute right-1 top-1 px-2 py-0.5 text-sm text-white bg-black/80 ring-1 ring-white rounded-sm group-hover:visible invisible">
-                    下载
-                    </Link>
+                        下载
+                    </a>
                     </Link>
                 </div>
             </div>
