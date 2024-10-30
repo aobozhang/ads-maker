@@ -43,7 +43,7 @@ const itemUpload = async (e) => {
 
     form.file = e.target.files[0];
 
-    router.post(route('ads-image.upload'), form, {
+    router.post(route('ads-item.store'), form, {
         forceFormData: true,
         replace: true,
         onSuccess: (page) => {
