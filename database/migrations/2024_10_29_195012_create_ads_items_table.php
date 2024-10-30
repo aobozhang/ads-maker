@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('type')->nullable();
             $table->string('path')->nullable();
             $table->string('url')->nullable();
+            $table->string('remote')->nullable();
             $table->json('tags')->nullable();
             $table->json('payload')->nullable();
             $table->softDeletes();

@@ -189,7 +189,7 @@ const bgImage = new Image();
 
 const onUrlChange = () => {
     bgImage.src = item.value.url;
-    bgImage.onload = saveJpeg();
+    bgImage.onload = saveJpeg;
 }
 
 const saveJpeg = async () => {
@@ -204,13 +204,16 @@ const saveJpeg = async () => {
     }).then(function (dataUrl) {
 
         const blob = dataURItoBlob(dataUrl);
+        form.file = blob;
+        form.url = item.value.url;
 
-        var form = useForm({
-            url: item.value.url,
-            file: blob,
+        router.post(route('ads-item.store'), form, {
+            forceFormData: true,
+            replace: true,
+            onSuccess: (page) => {
+                item.value.url = page.props.flash?.upload?.url;
+            }
         });
-
-        form.post(route('ads-item.store'));
     });
 }
 

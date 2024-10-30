@@ -33,9 +33,25 @@ class AdsItemController extends Controller
         $name = Carbon::now()->format('Ymd-His-u');
         $data = $request->except(['file']);
 
+        if ($request->has('url')) {
+
+            $url = $request->input('url');
+
+            $try = AdsItem::where('url', $url)
+                ->orWhere('remote', $url)
+                ->first();
+
+            if ($try) {
+                return back()->with('upload', $try);
+            }
+
+            $data['remote'] = $url;
+
+        }
+
         if ($request->hasFile('file')) {
 
-            $name .= "." . $request->file->extension();
+            $name .= "." . ($request->file->extension() ?? 'jpg');
 
             $path = $request->file('file')->storePubliclyAs(
                 'ads-items',
@@ -51,7 +67,7 @@ class AdsItemController extends Controller
             $adsItem = $request->user()->ads_items()->create($data);
             return back()->with('upload', $adsItem);
         } else {
-            return back();
+            return response(null, 500);
         }
 
     }

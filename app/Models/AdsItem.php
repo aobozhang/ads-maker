@@ -16,6 +16,7 @@ class AdsItem extends Model
         'type',
         'path',
         'url',
+        'remote',
         'tags',
         'payload',
     ];
