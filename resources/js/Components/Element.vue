@@ -70,15 +70,6 @@ const emit = defineEmits([
     'clk',
 ]);
 
-const clk = (e) => {
-    emit('clk', e);
-}
-
-const editMe = (e) => {
-    e.preventDefault();
-
-    console.log(e.target)
-}
 
 </script>
 

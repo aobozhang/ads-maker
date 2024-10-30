@@ -408,9 +408,6 @@ onMounted(() => {
     } else {
         localData.show('temp', true);
     }
-
-    console.log(list.value);
-    console.log(localData.filter(moment().format('YYYYMMDD')));
 })
 </script>
 

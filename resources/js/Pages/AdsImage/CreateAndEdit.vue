@@ -80,7 +80,6 @@ const el_ctl = {
             console.log('read from cache');
 
             el_model.value = JSON.parse(localStorage.getItem(`templateSave_${props.item?.id ?? 'tmp'}`)) ?? {};
-            console.log(el_model.value);
         }
 
         base.value = el_model.value.base;
@@ -183,12 +182,10 @@ const el_ctl = {
     },
     delByIndex: async (index) => {
         let res = data.value.splice(index, 1);
-        console.log(res[0]);
         await el_ctl.cache(true);
     },
     del: async (id) => {
         let res = _.remove(data.value, (i) => i.id === id);
-        console.log(res[0]);
         await el_ctl.cache(true);
         return res;
     },

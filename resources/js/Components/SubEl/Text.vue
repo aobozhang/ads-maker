@@ -55,8 +55,6 @@ const vDraggable = (el, binding) => {
     const updatePosition = () => {
         el.style.top = `${elCurrentY}px`;
         el.style.left = `${elCurrentX}px`;
-
-        console.log(rect.width);
     }
 
     const onMouseMove = (e) => {
