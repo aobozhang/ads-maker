@@ -372,7 +372,7 @@ onBeforeUnmount(() => {
                         </div>
 
                         <!-- TARGET AREA -->
-                        <div id="SavePicture" @click.self="el_ctl.active(null)" class="relative"
+                        <div id="SavePicture" @click.self="el_ctl.active(null)" class="relative overflow-clip"
                             :style="`width:${base.width}px;height:${base.height}px;`">
                             <transition-group name="ele">
                                 <Element v-for="(item, index) in data" :key="item.id" :item="item"
