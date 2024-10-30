@@ -37,21 +37,22 @@ class AdsImageController extends Controller
      */
     public function store(Request $request)
     {
-        $name = Carbon::now()->format('Ymd-His-u');
+        $name = Carbon::now()->format('Ymd-His-u') . "." . $request->file->extension();
         $path = $request->file('file')->storePubliclyAs(
             'ads-images',
-            $name . '.jpg',
+            $name,
             'public'
         );
+
+        if (!$request->file('file')->isValid()) {
+            return back()->with('message', 'upload faild.');
+        }
 
         $data = $request->except(['file']);
 
         $data['name'] = $name;
         $data['path'] = storage_path('app/public/' . $path);
         $data['url']  = asset('storage/' . $path);
-
-        \Log::info($data);
-        \Log::info($request->all());
 
         $adsImage = $request->user()->ads_images()->create($data);
 
@@ -74,7 +75,7 @@ class AdsImageController extends Controller
      */
     public function down(AdsImage $adsImage)
     {
-        return response()->download($adsImage->path);
+        return response()->download($adsImage->path, $adsImage->name);
     }
 
     /**

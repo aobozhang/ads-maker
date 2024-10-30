@@ -1,15 +1,13 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayoutPlus.vue';
-import { Head } from '@inertiajs/vue3';
 import { computed, ref, nextTick, onBeforeMount, onBeforeUnmount, watch, provide } from 'vue';
-import GradientText from "@/Components/GradientText.vue";
 import moment from 'moment'
-import _, { template, templateSettings } from 'lodash-es';
-import { Link, router, useForm, usePage } from '@inertiajs/vue3';
+import _ from 'lodash-es';
+import { Link, useForm } from '@inertiajs/vue3';
 import Element from "@/Components/Element.vue";
 import AdsItems from "@/Components/AdsItem/Index.vue";
 import { v4 as uuidv4 } from "uuid";
-import { toBlob } from 'html-to-image';
+import { toBlob, toJpeg } from 'html-to-image';
 
 const props = defineProps({
     adsItems: {
@@ -207,16 +205,38 @@ const el_ctl = {
 
 provide("GLOBAL_CREATE_AND_EDIT", { el_model, el_ctl });
 
+function dataURItoBlob(dataURI) {
+    // convert base64/URLEncoded data component to raw binary data held in a string
+    var byteString;
+    if (dataURI.split(',')[0].indexOf('base64') >= 0)
+        byteString = atob(dataURI.split(',')[1]);
+    else
+        byteString = unescape(dataURI.split(',')[1]);
+
+    // separate out the mime component
+    var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+
+    // write the bytes of the string to a typed array
+    var ia = new Uint8Array(byteString.length);
+    for (var i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+    }
+
+    return new Blob([ia], { type: mimeString });
+}
+
 const saveJpeg = async (query, forceCreate = false) => {
 
     const node = document.querySelector(query);
 
-    toBlob(node, {
+    toJpeg(node, {
         backgroundColor: '#ffffff',
         width: el_model.value.base.width,
         height: el_model.value.base.height,
         quality: 0.8,
-    }).then(function (blob) {
+    }).then(function (dataUrl) {
+
+        const blob = dataURItoBlob(dataUrl);
 
         if (forceCreate) {
             var form = useForm({

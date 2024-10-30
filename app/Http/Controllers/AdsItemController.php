@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AdsItem;
 use Carbon\Carbon;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 
 class AdsItemController extends Controller
@@ -30,23 +31,58 @@ class AdsItemController extends Controller
     public function store(Request $request)
     {
         $name = Carbon::now()->format('Ymd-His-u');
-        $path = $request->file('file')->storePubliclyAs(
-            'ads-items',
-            $name . '.jpg',
-            'public'
-        );
-        $from = $request->input('from');
-        $data = $request->except(['file', 'from']);
+        $data = $request->except(['file']);
 
-        $data['name'] = $name;
-        $data['type'] = 'picture';
-        $data['path'] = storage_path('app/public/' . $path);
-        $data['url']  = asset('storage/' . $path);
+        if ($request->hasFile('file')) {
 
-        $adsItem = $request->user()->ads_items()->create($data);
+            $name .= "." . $request->file->extension();
 
-        return back()->with('upload', $adsItem);
+            $path = $request->file('file')->storePubliclyAs(
+                'ads-items',
+                $name,
+                'public'
+            );
 
+            $data['path'] = storage_path('app/public/' . $path);
+            $data['url']  = asset('storage/' . $path);
+            $data['name'] = $name;
+            $data['type'] = 'picture';
+
+            $adsItem = $request->user()->ads_items()->create($data);
+            return back()->with('upload', $adsItem);
+        } else {
+            return back();
+        }
+
+    }
+
+    protected function downRemoteFile($url, $path = null)
+    {
+        if (!$path) {
+            $name = Carbon::now()->format('Ymd-His-u');
+            $path = storage_path('app/public/common' . $name);
+        }
+
+        $client = new Client();
+
+        $headers = [
+            'User-Agent'      => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept'          => 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+            'Accept-Language' => 'en-US,en;q=0.9',
+            'Referer'         => 'https://www.midjourney.com/', // 根据实际情况调整 Referer
+        ];
+
+        $response = $client->get($url, ['headers' => $headers]);
+
+        if ($response->getStatusCode() === 200) {
+            $fileContent = $response->getBody()->getContents();
+            file_put_contents($path, $fileContent);
+        }
+
+        return [
+            'status' => $response->getStatusCode(),
+            'path'   => $path,
+        ];
     }
 
     /**

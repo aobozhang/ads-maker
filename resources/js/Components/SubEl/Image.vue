@@ -3,6 +3,7 @@ import { ref, computed, inject } from 'vue';
 import _ from 'lodash-es';
 import { watch } from 'vue';
 import { Link, router, useForm, usePage } from '@inertiajs/vue3';
+import { toBlob, toJpeg } from 'html-to-image';
 
 const props = defineProps({
     item: {
@@ -164,6 +165,55 @@ const itemUpload = async (e) => {
     });
 }
 
+function dataURItoBlob(dataURI) {
+    // convert base64/URLEncoded data component to raw binary data held in a string
+    var byteString;
+    if (dataURI.split(',')[0].indexOf('base64') >= 0)
+        byteString = atob(dataURI.split(',')[1]);
+    else
+        byteString = unescape(dataURI.split(',')[1]);
+
+    // separate out the mime component
+    var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+
+    // write the bytes of the string to a typed array
+    var ia = new Uint8Array(byteString.length);
+    for (var i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+    }
+
+    return new Blob([ia], { type: mimeString });
+}
+
+const bgImage = new Image();
+
+const onUrlChange = () => {
+    bgImage.src = item.value.url;
+    bgImage.onload = saveJpeg();
+}
+
+const saveJpeg = async () => {
+
+    const node = bgImage;
+
+    toJpeg(node, {
+        // backgroundColor: '#ffffff',
+        width: bgImage.width,
+        height: bgImage.height,
+        quality: 0.8,
+    }).then(function (dataUrl) {
+
+        const blob = dataURItoBlob(dataUrl);
+
+        var form = useForm({
+            url: item.value.url,
+            file: blob,
+        });
+
+        form.post(route('ads-item.store'));
+    });
+}
+
 </script>
 
 <template>
@@ -191,7 +241,7 @@ const itemUpload = async (e) => {
                 <div class="w-full flex flex-col">
                     <label for="item-url">URL</label>
                     <div class="flex flex-row w-fit gap-x-2 align-middle items-center">
-                        <input id="item-url" v-model="item.url" class="w-full text-left truncate"
+                        <input @change="onUrlChange" id="item-url" v-model="item.url" class="w-full text-left truncate"
                             placeholder="请贴入背景URL" />
                         <!-- custom file upload -->
                         <form class="flex items-center justify-center bg-white h-9 aspect-square">
