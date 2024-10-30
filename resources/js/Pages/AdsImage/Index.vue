@@ -1,4 +1,6 @@
 <script setup>
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayoutPlus.vue';
+import { Head } from '@inertiajs/vue3';
 import { computed, ref, onMounted, onBeforeMount, watch } from 'vue';
 import { toBlob, toJpeg } from 'html-to-image';
 import GradientText from "@/Components/GradientText.vue";
@@ -31,6 +33,10 @@ const props = defineProps({
 });
 
 const list = computed(() => _.get(props.list, 'data'));
+const updateDate = (item) => moment(item.updated_at, 'YYYY-MM-DD HH:mm:ss').format('YYYY-MM-DD');
+
+const catg = computed(() => _.groupBy(list.value, updateDate));
+
 const pagi = computed(() => props.list);
 
 const confirmData = ref({});
@@ -56,47 +62,54 @@ onMounted(() => {
 
 </script>
 <template>
-    <div class="flex flex-row w-lvw">
-        <!-- left side bar -->
-        <div class="w-64 shrink-0 grow-0 h-lvh px-4 border-r border-gray-300 flex flex-col">
-            <div class="grow w-full flex flex-col py-4">
-                <Link :href="route('ads-image.create')"
-                    class="bg-blue-400 text-white w-full py-2 rounded-lg text-center">创建
-                </Link>
-            </div>
-        </div>
-        <!-- main list -->
-        <div class="grow p-4 flex flex-col max-w-5xl">
-            <div class="grow">
-                <div class="flex flex-row flex-wrap gap-5">
-                    <transition-group name='list'>
-                        <Link @mouseleave="confirmReset" :href="route('ads-image.show', item.id)"
-                            v-for="(item, index) in list" :key="item.id"
-                            class="w-32 aspect-square bg-contain bg-no-repeat bg-center border border-gray-100 rounded relative group"
-                            :style="`background-image:url(${item.url})`">
-                        <div class="absolute right-1 top-1 flex flex-row">
-                            <a target="_blank" :href="route('ads-image.down', item.id)"
-                                @click="newTab($event, route('ads-image.down', item.id))"
-                                class="px-2 py-0.5 text-sm text-white bg-black/80 ring-1 ring-white rounded-sm group-hover:visible invisible">
-                                下载
-                            </a>
-                            <button v-if="!confirmed(item.id)" @click.prevent="confirm(item.id)"
-                                class="px-2 py-0.5 text-sm text-white bg-red-500/60 ring-1 ring-white rounded-sm group-hover:visible invisible">删除</button>
-                            <Link v-else method="delete" :href="route('ads-image.destroy', item.id)" :only="['list']"
-                                as="button" type="button"
-                                class="px-2 py-0.5 text-sm text-white bg-red-500/90 ring-1 ring-white rounded-sm group-hover:visible invisible">
-                            确认
-                            </Link>
-                        </div>
-                        </Link>
-                    </transition-group>
+    <AuthenticatedLayout>
+        <div class="grow flex flex-row h-lvh max-w-7xl justify-center mx-auto w-full">
+            <!-- left side bar -->
+            <div class="w-64 shrink-0 grow-0 h-lvh px-4 border-r border-gray-300 flex flex-col">
+                <div class="grow w-full flex flex-col py-4">
+                    <Link :href="route('ads-image.create')"
+                        class="bg-blue-400 text-white w-full py-2 rounded-lg text-center">创建
+                    </Link>
                 </div>
             </div>
-            <div class="w-full border-t-2 border-gray-300 border-dashed pt-4 grid items-center">
-                <Pagination :pagi="pagi" class="mx-auto" />
+            <!-- main list -->
+            <div class="grow p-4 h-full flex flex-col max-w-5xl">
+                <div class="grow flex flex-col gap-y-5">
+                    <div v-for="(items, key, index) in catg" :key="key">
+                        <div class="w-full border-b border-gray-400 py-4">
+                            <h4 class="font-black text-2xl">{{ key }}</h4>
+                        </div>
+                        <div class="flex flex-row flex-wrap gap-5 py-4">
+                            <transition-group name='list'>
+                                <Link @mouseleave="confirmReset" :href="route('ads-image.show', item.id)"
+                                    v-for="(item, index) in items" :key="item.id"
+                                    class="w-40 aspect-square bg-contain bg-no-repeat bg-center border border-gray-100 rounded relative group"
+                                    :style="`background-image:url(${item.url})`">
+                                <div class="absolute right-1 top-1 flex flex-row">
+                                    <a target="_blank" :href="route('ads-image.down', item.id)"
+                                        @click="newTab($event, route('ads-image.down', item.id))"
+                                        class="px-2 py-0.5 text-sm text-white bg-black/80 ring-1 ring-white rounded-sm group-hover:visible invisible">
+                                        下载
+                                    </a>
+                                    <button v-if="!confirmed(item.id)" @click.prevent="confirm(item.id)"
+                                        class="px-2 py-0.5 text-sm text-white bg-red-500/60 ring-1 ring-white rounded-sm group-hover:visible invisible">删除</button>
+                                    <Link v-else method="delete" :href="route('ads-image.destroy', item.id)"
+                                        :only="['list']" as="button" type="button"
+                                        class="px-2 py-0.5 text-sm text-white bg-red-500/90 ring-1 ring-white rounded-sm group-hover:visible invisible">
+                                    确认
+                                    </Link>
+                                </div>
+                                </Link>
+                            </transition-group>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full border-t-2 border-gray-300 border-dashed pt-4 grid items-center">
+                    <Pagination :pagi="pagi" class="mx-auto" />
+                </div>
             </div>
         </div>
-    </div>
+    </AuthenticatedLayout>
 </template>
 <style>
 .list-move,

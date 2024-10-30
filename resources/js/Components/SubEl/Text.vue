@@ -112,21 +112,22 @@ watch(
     ]">
         <!-- configuration -->
         <Teleport defer to="#configContainer">
-            <div v-if="el_ctl.isActive(item)" class="flex flex-col text-sm gap-y-4 py-4">
+            <div v-if="el_ctl.isActive(item)" class="flex flex-col h-full text-sm gap-y-4 py-4">
                 <!-- content -->
-                <div class="w-full flex flex-col">
+                <div class="grow w-full flex flex-col">
                     <label for="text-content">内容</label>
-                    <textarea id="text-content" v-model="item.innerHTML" :placeholder="item.placeholder"></textarea>
+                    <textarea class="grow" id="text-content" v-model="item.innerHTML"
+                        :placeholder="item.placeholder"></textarea>
                 </div>
                 <!-- class -->
-                <div class="w-full flex flex-col">
+                <div class="grow w-full flex flex-col">
                     <label for="text-class">Class</label>
-                    <textarea id="text-class" v-model="item.class"></textarea>
+                    <textarea class="grow" id="text-class" v-model="item.class"></textarea>
                 </div>
                 <!-- style -->
-                <div class="w-full flex flex-col">
+                <div class="grow w-full flex flex-col">
                     <label for="text-style">Style</label>
-                    <textarea id="text-style" v-model="item.style"></textarea>
+                    <textarea class="grow" id="text-style" v-model="item.style"></textarea>
                 </div>
             </div>
         </Teleport>

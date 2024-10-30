@@ -8,18 +8,12 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin'       => Route::has('login'),
-        'canRegister'    => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion'     => PHP_VERSION,
-    ]);
-});
+    return redirect()->route('ads-image.index');
+})->name('Home');
 
 Route::middleware('auth')->prefix('/')->group(function () {
     Route::resource('/ads-image', AdsImageController::class);
     Route::get('/ads-image/{ads_image}/down', [AdsImageController::class, 'down'])->name('ads-image.down');
-    // Route::post('/ads-image/upload', [AdsImageController::class, 'upload'])->name('ads-image.upload');
 
     Route::resource('/ads-item', AdsItemController::class);
     Route::get('/ads-item/{ads_item}/down', [AdsItemController::class, 'down'])->name('ads-item.down');

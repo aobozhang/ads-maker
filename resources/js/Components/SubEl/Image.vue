@@ -174,7 +174,7 @@ const itemUpload = async (e) => {
         ]">
         <!-- configuration -->
         <Teleport defer to="#configContainer">
-            <div v-if="el_ctl.isActive(item)" class="flex flex-col text-sm gap-y-4">
+            <div v-if="el_ctl.isActive(item)" class="flex flex-col h-full text-sm gap-y-4">
                 <!-- size -->
                 <div class="w-full flex flex-col">
                     <label for="">宽 - 高 (px)</label>
@@ -212,14 +212,14 @@ const itemUpload = async (e) => {
                 </div>
 
                 <!-- class -->
-                <div class="w-full flex flex-col">
+                <div class="w-full grow flex flex-col">
                     <label for="item-class">Class</label>
-                    <textarea id="item-class" v-model="item.class"></textarea>
+                    <textarea class="grow" id="item-class" v-model="item.class"></textarea>
                 </div>
                 <!-- style -->
-                <div class="w-full flex flex-col">
+                <div class="w-full grow flex flex-col">
                     <label for="item-style">Style</label>
-                    <textarea id="item-style" v-model="item.style"></textarea>
+                    <textarea class="grow" id="item-style" v-model="item.style"></textarea>
                 </div>
             </div>
         </Teleport>
