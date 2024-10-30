@@ -1,13 +1,9 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayoutPlus.vue';
-import { Head } from '@inertiajs/vue3';
 import { computed, ref, onMounted, onBeforeMount, watch } from 'vue';
-import { toBlob, toJpeg } from 'html-to-image';
-import GradientText from "@/Components/GradientText.vue";
 import moment from 'moment'
 import _ from 'lodash-es';
 import { Link, useForm } from '@inertiajs/vue3';
-import Element from "@/Components/Element.vue";
 import Pagination from "@/Components/Pagination.vue";
 
 const props = defineProps({

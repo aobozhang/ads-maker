@@ -169,12 +169,12 @@ const itemUpload = async (e) => {
 <template>
     <div @click="el_ctl.active(item)" :id="item.id" class="absolute select-none"
         :style="[item.style, `width: ${item.width}px; height: ${item.height}px;`]" :class="[
-            { 'ring ring-indigo-100 ring-offset-1': el_ctl.isActive(item) },
+            { 'ring ring-indigo-100 ring-offset-1': isActived },
             item.class, 'z-30'
         ]">
         <!-- configuration -->
         <Teleport defer to="#configContainer">
-            <div v-if="el_ctl.isActive(item)" class="flex flex-col h-full text-sm gap-y-4">
+            <div v-if="isActived" class="flex flex-col h-full text-sm gap-y-4">
                 <!-- size -->
                 <div class="w-full flex flex-col">
                     <label for="">宽 - 高 (px)</label>
@@ -225,11 +225,11 @@ const itemUpload = async (e) => {
         </Teleport>
 
         <div class="w-full h-full relative bg-contain bg-no-repeat" :style="`background-image:url(${item.url})`">
-            <div v-if="el_ctl.isActive(item)" @click.stop.prevent="el_ctl.del(item.id)"
+            <div v-if="isActived" @click.stop.prevent="el_ctl.del(item.id)"
                 class="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 bg-black/80 ring ring-white rounded-full aspect-square w-9 grid items-center justify-center">
                 <span class='text-base'>❌</span>
             </div>
-            <div v-resize v-if="el_ctl.isActive(item)"
+            <div v-resize v-if="isActived"
                 class="absolute bottom-0 right-0 translate-x-1/2 translate-y-1/2 bg-white ring ring-white rounded-full aspect-square w-[2vmin] grid items-center justify-center shadow">
             </div>
             <div v-draggable alt="图片" class="w-full h-full" />

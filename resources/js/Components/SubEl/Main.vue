@@ -59,7 +59,7 @@ const itemUpload = async (e) => {
 
         <!-- configuration -->
         <Teleport defer to="#configContainer">
-            <div v-if="el_ctl.isActive(item)" class="flex flex-col text-sm gap-y-4 py-4">
+            <div v-if="isActived" class="flex flex-col text-sm gap-y-4 py-4">
                 <!-- main -->
                 <div class="w-full flex flex-col">
                     <label for="item-url">URL</label>

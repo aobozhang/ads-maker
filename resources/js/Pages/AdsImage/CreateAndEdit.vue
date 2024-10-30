@@ -98,7 +98,7 @@ const el_ctl = {
             id: uuidv4(),
             type: "text",
             placeholder: '请输入内容',
-            class: `w-fit text-white text-3xl font-bold bg-black/70 px-8 py-6 rounded-lg -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2`,
+            class: `w-max text-white text-6xl tracking-wider font-bold bg-black/70 px-8 py-6 rounded-lg -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2`,
             style: null,
         };
 
@@ -249,44 +249,6 @@ const saveJpeg = async (query, forceCreate = false) => {
     });
 }
 
-const handleElementClick = (e) => {
-    console.log(e);
-}
-
-const mainUpload = async (e) => {
-
-    const data = {
-        file: e.target.files[0]
-    };
-
-    router.post(route('ads-item.store'), data, {
-        forceFormData: true,
-        replace: true,
-        onSuccess: (page) => {
-            el_ctl.updateData('main', page.props.flash?.upload?.url, 'url');
-        }
-    });
-}
-
-
-const confirmData = ref({});
-const confirm = (id) => {
-    _.set(confirmData.value, id, true);
-}
-
-const confirmed = (id) => {
-    return _.get(confirmData.value, id, false);
-}
-
-const confirmReset = () => {
-    confirmData.value = {};
-}
-
-const newTab = (e, url) => {
-    e.preventDefault();
-    window.open(url);
-}
-
 onBeforeMount(() => {
     el_ctl.init();
 });
@@ -296,6 +258,7 @@ onBeforeUnmount(() => {
     cacheMark = false;
     el_ctl.cache();
 })
+
 </script>
 <template>
     <AuthenticatedLayout>
@@ -401,7 +364,7 @@ onBeforeUnmount(() => {
                 <div
                     class="grow  py-5 w-full flex flex-row justify-center max-w-6xl min-w-[720px] h-full overflow-y-scroll no-scrollbar overflow-x-auto">
 
-                    <div class="relative" :style="`width:${base.width}px;height:${base.height}px;`">
+                    <div class="relative overflow-visible" :style="`width:${base.width}px;height:${base.height}px;`">
                         <!-- 辅助线 -->
                         <div v-if="base.auxiliary"
                             class="absolute !aspect-square pointer-events-none w-full border-dashed border-y-2 border-gray-200 z-40 top-1/2 left-0 -translate-y-1/2 flex flex-row-reverse">
@@ -409,11 +372,11 @@ onBeforeUnmount(() => {
                         </div>
 
                         <!-- TARGET AREA -->
-                        <div id="SavePicture" @click.self="el_ctl.active(null)" class="relative overflow-hidden"
+                        <div id="SavePicture" @click.self="el_ctl.active(null)" class="relative"
                             :style="`width:${base.width}px;height:${base.height}px;`">
                             <transition-group name="ele">
                                 <Element v-for="(item, index) in data" :key="item.id" :item="item"
-                                    @clk="handleElementClick" :isActived="el_ctl.isActive(item)">
+                                    :isActived="el_ctl.isActive(item)">
                                 </Element>
                             </transition-group>
                         </div>

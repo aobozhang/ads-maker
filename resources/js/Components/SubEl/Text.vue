@@ -8,7 +8,7 @@ const props = defineProps({
         type: Object,
         default: {},
     },
-    isActive: {
+    isActived: {
         type: Boolean,
         default: false,
     }
@@ -30,8 +30,6 @@ const vDraggable = (el, binding) => {
     let elCurrentX = 0;
     let elCurrentY = 0;
     let isDown = false;
-    let initWidth = rect.width;
-    let initHeight = rect.height;
 
     el.ondragstart = () => false;
     el.addEventListener('mousedown', (e) => {
@@ -47,10 +45,6 @@ const vDraggable = (el, binding) => {
 
     const onMouseUp = () => {
         isDown = false;
-
-        el.style.width = 'fit-content';
-        el.style.height = 'fit-content';
-
         _.set(item.value, `style`, el.style.cssText);
 
         el.removeEventListener('mousemove', onMouseMove);
@@ -59,18 +53,17 @@ const vDraggable = (el, binding) => {
     }
 
     const updatePosition = () => {
-        el.style.position = 'absolute';
         el.style.top = `${elCurrentY}px`;
         el.style.left = `${elCurrentX}px`;
-        el.style.width = `${initWidth}px`;
-        el.style.height = `${initHeight}px`;
+
+        console.log(rect.width);
     }
 
     const onMouseMove = (e) => {
+        if (!isDown) return;
 
         e.preventDefault();
 
-        if (!isDown) return;
         elCurrentX = e.pageX - mouseStartX + elStartX;
         elCurrentY = e.pageY - mouseStartY + elStartY;
 
@@ -81,8 +74,6 @@ const vDraggable = (el, binding) => {
 
     el.addEventListener('mouseup', () => {
         isDown = false;
-        el.style.width = 'fit-content';
-        el.style.height = 'fit-content';
     });
 };
 
@@ -106,13 +97,13 @@ watch(
 
 <template>
     <div @click="el_ctl.active(item)" v-draggable class="absolute select-none" :style="item.style" :class="[
-        { 'ring-1 ring-pink-100 ring-offset-4': el_ctl.isActive(item) },
+        { 'ring-1 ring-pink-100 ring-offset-4': isActived },
         item.class,
         'z-40'
     ]">
         <!-- configuration -->
         <Teleport defer to="#configContainer">
-            <div v-if="el_ctl.isActive(item)" class="flex flex-col h-full text-sm gap-y-4 py-4">
+            <div v-if="isActived" class="flex flex-col h-full text-sm gap-y-4 py-4">
                 <!-- content -->
                 <div class="grow w-full flex flex-col">
                     <label for="text-content">内容</label>
@@ -133,11 +124,11 @@ watch(
         </Teleport>
 
         <div class="w-full h-full relative">
-            <div v-if="el_ctl.isActive(item)" @click.prevent="el_ctl.del(item.id)"
+            <div v-if="isActived" @click.prevent="el_ctl.del(item.id)"
                 class="absolute top-0 right-0 translate-x-full -translate-y-full bg-black/80 ring ring-white rounded-full aspect-square w-9 grid items-center justify-center">
                 <span class='text-base'>❌</span>
             </div>
-            <div class="whitespace-pre-line" v-html="item.innerHTML ?? item.placeholder"></div>
+            <div v-html="item.innerHTML ?? item.placeholder"></div>
         </div>
     </div>
 </template>
