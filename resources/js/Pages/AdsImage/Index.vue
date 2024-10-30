@@ -30,57 +30,20 @@ const props = defineProps({
     },
 });
 
-console.log(props.list.data);
-
-const list = ref(_.get(props.list, 'data'));
+const list = computed(() => _.get(props.list, 'data'));
 const pagi = computed(() => props.list);
 
-function exportAsJSON(data, filename) {
-    const jsonData = JSON.stringify(data, null, 2);
-    const blob = new Blob([jsonData], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
+const confirmData = ref({});
+const confirm = (id) => {
+    _.set(confirmData.value, id, true);
 }
+const confirmed = (id) => {
 
-const exportJson = () => {
-
-    const myData = localStorage.getItem(`adsImageMaker-data`);
-    let date = moment();
-    let dateStr = date.format("YYYYMMDD_HHmmss");
-    const filename = `adsImageMaker-${dateStr}.json`;
-
-    exportAsJSON(myData, filename);
+    return _.get(confirmData.value, id, false);
 }
-
-const importJson = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-
-    input.addEventListener('change', function (event) {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                try {
-                    const jsonData = JSON.parse(e.target.result);
-                    localStorage.setItem(`adsImageMaker-data`, jsonData);
-                    alert('导入成功');
-                } catch (error) {
-                    alert('文件不是有效的 JSON 格式。');
-                }
-            };
-            reader.readAsText(file);
-        }
-    });
-
-    input.click();
+const confirmReset = () => {
+    confirmData.value = {};
 }
-
 
 const newTab = (e, url) => {
     e.preventDefault();
@@ -101,24 +64,32 @@ onMounted(() => {
                     class="bg-blue-400 text-white w-full py-2 rounded-lg text-center">创建
                 </Link>
             </div>
-            <div class="shrink-0 grow-0 flex flex-col gap-y-3 border-t py-4 border-gray-400">
-                <div class="bg-blue-400 text-white w-full py-2 rounded-lg text-center">导入</div>
-                <div class="bg-blue-400 text-white w-full py-2 rounded-lg text-center">导出</div>
-            </div>
         </div>
         <!-- main list -->
         <div class="grow p-4 flex flex-col max-w-5xl">
             <div class="grow">
                 <div class="flex flex-row flex-wrap gap-5">
-                    <Link :href="route('ads-image.show', item.id)" v-for="(item, index) in list"
-                        class="w-32 aspect-square bg-contain bg-no-repeat bg-center border border-gray-100 rounded relative group"
-                        :style="`background-image:url(${item.url})`">
-                    <a target="_blank" :href="route('ads-image.down', item.id)"
-                        @click="newTab($event, route('ads-image.down', item.id))"
-                        class="absolute right-1 top-1 px-2 py-0.5 text-sm text-white bg-black/80 ring-1 ring-white rounded-sm group-hover:visible invisible">
-                        下载
-                    </a>
-                    </Link>
+                    <transition-group name='list'>
+                        <Link @mouseleave="confirmReset" :href="route('ads-image.show', item.id)"
+                            v-for="(item, index) in list" :key="item.id"
+                            class="w-32 aspect-square bg-contain bg-no-repeat bg-center border border-gray-100 rounded relative group"
+                            :style="`background-image:url(${item.url})`">
+                        <div class="absolute right-1 top-1 flex flex-row">
+                            <a target="_blank" :href="route('ads-image.down', item.id)"
+                                @click="newTab($event, route('ads-image.down', item.id))"
+                                class="px-2 py-0.5 text-sm text-white bg-black/80 ring-1 ring-white rounded-sm group-hover:visible invisible">
+                                下载
+                            </a>
+                            <button v-if="!confirmed(item.id)" @click.prevent="confirm(item.id)"
+                                class="px-2 py-0.5 text-sm text-white bg-red-500/60 ring-1 ring-white rounded-sm group-hover:visible invisible">删除</button>
+                            <Link v-else method="delete" :href="route('ads-image.destroy', item.id)" :only="['list']"
+                                as="button" type="button"
+                                class="px-2 py-0.5 text-sm text-white bg-red-500/90 ring-1 ring-white rounded-sm group-hover:visible invisible">
+                            确认
+                            </Link>
+                        </div>
+                        </Link>
+                    </transition-group>
                 </div>
             </div>
             <div class="w-full border-t-2 border-gray-300 border-dashed pt-4 grid items-center">
@@ -127,3 +98,23 @@ onMounted(() => {
         </div>
     </div>
 </template>
+<style>
+.list-move,
+/* 对移动中的元素应用的过渡 */
+.list-enter-active,
+.list-leave-active {
+    transition: all 0.5s ease;
+}
+
+.list-enter-from,
+.list-leave-to {
+    opacity: 0;
+    transform: scale(0);
+}
+
+/* 确保将离开的元素从布局流中删除
+  以便能够正确地计算移动的动画。 */
+.list-leave-active {
+    position: absolute;
+}
+</style>

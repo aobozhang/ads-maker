@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdsImageController;
+use App\Http\Controllers\AdsItemController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -17,8 +18,11 @@ Route::get('/', function () {
 
 Route::middleware('auth')->prefix('/')->group(function () {
     Route::resource('/ads-image', AdsImageController::class);
-    Route::get('/ads-image/{ads_image}/down/{redirect?}', [AdsImageController::class, 'down'])->name('ads-image.down');
-    Route::post('/ads-image/upload', [AdsImageController::class, 'upload'])->name('ads-image.upload');
+    Route::get('/ads-image/{ads_image}/down', [AdsImageController::class, 'down'])->name('ads-image.down');
+    // Route::post('/ads-image/upload', [AdsImageController::class, 'upload'])->name('ads-image.upload');
+
+    Route::resource('/ads-item', AdsItemController::class);
+    Route::get('/ads-item/{ads_item}/down', [AdsItemController::class, 'down'])->name('ads-item.down');
 });
 
 Route::get('/dashboard', function () {

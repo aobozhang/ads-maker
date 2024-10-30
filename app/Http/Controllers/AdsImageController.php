@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AdsImage;
+use App\Models\AdsItem;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -24,9 +25,11 @@ class AdsImageController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
-        return Inertia::render('AdsImage/CreateAndEdit');
+        return Inertia::render('AdsImage/CreateAndEdit', [
+            'adsItems' => fn() => AdsItem::where('user_id', $request->user()->id)->paginate(30),
+        ]);
     }
 
     /**
@@ -47,6 +50,9 @@ class AdsImageController extends Controller
         $data['path'] = storage_path('app/public/' . $path);
         $data['url']  = asset('storage/' . $path);
 
+        \Log::info($data);
+        \Log::info($request->all());
+
         $adsImage = $request->user()->ads_images()->create($data);
 
         return redirect(route('ads-image.show', $adsImage));
@@ -55,44 +61,20 @@ class AdsImageController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(AdsImage $adsImage)
+    public function show(Request $request, AdsImage $adsImage)
     {
         return Inertia::render('AdsImage/CreateAndEdit', [
-            'item' => $adsImage,
+            'adsItems' => fn() => AdsItem::where('user_id', $request->user()->id)->paginate(30),
+            'item'     => $adsImage,
         ]);
     }
 
     /**
      * download the specified resource image.
      */
-    public function down(AdsImage $adsImage, $redirect = false)
+    public function down(AdsImage $adsImage)
     {
         return response()->download($adsImage->path);
-    }
-
-    /**
-     * upload file
-     */
-    public function upload(Request $request)
-    {
-        $name = Carbon::now()->format('Ymd-His-u');
-        $path = $request->file('file')->storePubliclyAs(
-            'ads-items',
-            $name . '.jpg',
-            'public'
-        );
-        $from = $request->input('from');
-        $data = $request->except(['file', 'from']);
-
-        $data['name'] = $name;
-        $data['type'] = 'picture';
-        $data['path'] = storage_path('app/public/' . $path);
-        $data['url']  = asset('storage/' . $path);
-
-        $adsImage = $request->user()->ads_items()->create($data);
-
-        return back()->with('upload', $adsImage);
-
     }
 
     /**
@@ -132,8 +114,8 @@ class AdsImageController extends Controller
      */
     public function destroy(AdsImage $adsImage)
     {
-        $adsImage->destroy();
+        $adsImage->delete();
 
-        return redirect(route('ads-image.index'));
+        return to_route('ads-image.index');
     }
 }

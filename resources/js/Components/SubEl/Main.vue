@@ -2,56 +2,22 @@
 import { ref, computed, inject } from 'vue';
 import _ from 'lodash-es';
 import { watch } from 'vue';
+import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 
 const props = defineProps({
     item: {
         type: Object,
         default: {},
     },
+    isActived: {
+        type: Boolean,
+        default: false,
+    }
 });
 
 const item = ref(props.item);
-const { el_model, el_controller } = inject('GLOBAL_CREATE_AND_EDIT');
 
-const vDraggable = (el, binding) => {
-
-    let rect = el.getBoundingClientRect();
-
-    // 设置拖动元素的初始位置和尺寸
-    el.draggable = "true";
-    let mouseStartX = 0;
-    let mouseStartY = 0;
-    let elStartX = 0;
-    let elStartY = 0;
-    let isDown = false;
-
-    el.ondragstart = () => false;
-    el.addEventListener('mousedown', (e) => {
-        isDown = true;
-        elStartX = el.offsetLeft;
-        elStartY = el.offsetTop;
-        mouseStartX = e.pageX;
-        mouseStartY = e.pageY;
-    });
-
-    document.addEventListener('mousemove', (e) => {
-
-        if (!isDown) return;
-
-        var x = e.pageX - mouseStartX + elStartX;
-        var y = e.pageY - mouseStartY + elStartY;
-
-        el.style.position = 'absolute';
-        el.style.top = `${y}px`;
-        el.style.left = `${x}px`;
-
-        _.set(item.value, `style`, el.style.cssText);
-    });
-
-    document.addEventListener('mouseup', () => {
-        isDown = false;
-    });
-};
+const { el_model, el_ctl } = inject('GLOBAL_CREATE_AND_EDIT');
 
 const emit = defineEmits([
     'clk',
@@ -64,23 +30,60 @@ const clk = (e) => {
 watch(
     item,
     (newVal, oldVal) => {
-        el_controller.update(item.value.id, item.value);
+        el_ctl.updateData(item.value.id, newVal);
     },
     { deep: true }
 )
 
-const editMe = (e) => {
-    e.preventDefault();
+const form = ref({
+    file: null,
+})
 
-    console.log(e.target)
+const itemUpload = async (e) => {
+
+    form.file = e.target.files[0];
+
+    router.post(route('ads-image.upload'), form, {
+        forceFormData: true,
+        replace: true,
+        onSuccess: (page) => {
+            item.value.url = page.props.flash?.upload?.url;
+        }
+    });
 }
-
 </script>
 
 <template>
-    <div class="absolute w-full h-full pointer-events-none">
+    <div :class="item.class" class="absolute w-full h-full pointer-events-none"
+        :style="`background-image:url(${item.url})`">
 
-        <div :class="item.class" class="pointer-events-none w-full h-full" :style="`background-image:url(${item.src})`">
-        </div>
+        <!-- configuration -->
+        <Teleport defer to="#configContainer">
+            <div v-if="el_ctl.isActive(item)" class="flex flex-col text-sm gap-y-4 py-4">
+                <!-- main -->
+                <div class="w-full flex flex-col">
+                    <label for="item-url">URL</label>
+                    <div class="flex flex-row w-fit gap-x-2 align-middle items-center">
+                        <input id="item-url" v-model="item.url" class="w-full text-left truncate"
+                            placeholder="请贴入背景URL" />
+                        <!-- custom file upload -->
+                        <form class="flex items-center justify-center bg-white h-9 aspect-square">
+                            <div
+                                class="h-full rounded border border-gray-400 flex justify-center items-center hover:bg-blue-200">
+                                <div class="absolute">
+                                    <div class="flex items-center">
+                                        <span class="block text-gray-800 font-normal">传</span>
+                                    </div>
+                                </div>
+                                <input id="itemFile" type="file" class="h-full w-full opacity-0" name="itemFile"
+                                    @input="itemUpload($event)">
+                            </div>
+                        </form>
+
+                    </div>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-300" id="file_input_help">JPG</p>
+                </div>
+            </div>
+        </Teleport>
     </div>
 </template>

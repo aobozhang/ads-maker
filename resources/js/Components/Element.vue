@@ -7,7 +7,7 @@ import Main from "./SubEl/Main.vue";
 
 const cpt = {
     text: Text,
-    image: Image,
+    picture: Image,
     main: Main,
 }
 
@@ -16,10 +16,14 @@ const props = defineProps({
         type: Object,
         default: {},
     },
+    isActived: {
+        type: Boolean,
+        default: false,
+    }
 });
 
 const item = ref(props.item);
-const { el_model, el_controller } = inject('GLOBAL_CREATE_AND_EDIT');
+const { el_model, el_ctl } = inject('GLOBAL_CREATE_AND_EDIT');
 
 const vDraggable = (el, binding) => {
 
@@ -79,5 +83,5 @@ const editMe = (e) => {
 </script>
 
 <template>
-    <component :is="cpt[item.type]" :item="item" />
+    <component :is="cpt[item.type]" :item="item" :isActived="isActived" />
 </template>

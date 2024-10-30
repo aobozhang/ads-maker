@@ -9,10 +9,14 @@ const props = defineProps({
         type: Object,
         default: {},
     },
+    isActived: {
+        type: Boolean,
+        default: false,
+    }
 });
 
 const item = ref(props.item);
-const { el_model, el_controller } = inject('GLOBAL_CREATE_AND_EDIT');
+const { el_ctl } = inject('GLOBAL_CREATE_AND_EDIT');
 
 const vDraggable = (el, binding) => {
 
@@ -25,40 +29,46 @@ const vDraggable = (el, binding) => {
     let mouseStartY = 0;
     let elStartX = 0;
     let elStartY = 0;
+    let elCurrentX = 0;
+    let elCurrentY = 0;
     let isDown = false;
 
     el.ondragstart = () => false;
     el.addEventListener('mousedown', (e) => {
         e.preventDefault();
 
-        el_controller.active(item.value.id);
-
         isDown = true;
         elStartX = mainEl.offsetLeft;
         elStartY = mainEl.offsetTop;
         mouseStartX = e.pageX;
         mouseStartY = e.pageY;
+
+        el.addEventListener('mousemove', onMouseMove);
+        el.addEventListener('mouseup', onMouseUp);
     });
 
-    document.addEventListener('mousemove', (e) => {
+    const updatePosition = () => {
+        mainEl.style.position = 'absolute';
+        mainEl.style.top = `${elCurrentY}px`;
+        mainEl.style.left = `${elCurrentX}px`;
 
+    }
+
+    const onMouseMove = (e) => {
         if (!isDown) return;
         e.preventDefault();
-
-        var x = e.pageX - mouseStartX + elStartX;
-        var y = e.pageY - mouseStartY + elStartY;
-
-        mainEl.style.position = 'absolute';
-        mainEl.style.top = `${y}px`;
-        mainEl.style.left = `${x}px`;
-
-        _.set(item.value, `style`, mainEl.style.cssText);
-    });
-
-    document.addEventListener('mouseup', (e) => {
+        elCurrentX = e.pageX - mouseStartX + elStartX;
+        elCurrentY = e.pageY - mouseStartY + elStartY;
+        window.requestAnimationFrame(updatePosition);
+    }
+    const onMouseUp = (e) => {
         e.preventDefault();
         isDown = false;
-    });
+        _.set(item.value, `style`, mainEl.style.cssText);
+
+        el.removeEventListener('mousemove', onMouseMove);
+        el.removeEventListener('mouseup', onMouseUp);
+    }
 };
 
 const vResize = (el, binding) => {
@@ -69,6 +79,8 @@ const vResize = (el, binding) => {
     let mouseStartY = 0;
     let elStartX = 0;
     let elStartY = 0;
+    let elCurrentX = 0;
+    let elCurrentY = 0;
     let isDown = false;
 
     let itemEl = document.getElementById(`${item.value.id}`);
@@ -77,38 +89,46 @@ const vResize = (el, binding) => {
     el.ondragstart = () => false;
     el.addEventListener('mousedown', (e) => {
         e.preventDefault();
-
-        el_controller.active(item.value.id);
-
         isDown = true;
         elStartX = rect.width;
         elStartY = rect.height;
         mouseStartX = e.pageX;
         mouseStartY = e.pageY;
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
     });
 
-    document.addEventListener('mousemove', (e) => {
-        e.preventDefault();
-
-        if (!isDown) return;
-
-        var width = e.pageX - mouseStartX + elStartX;
-        var height = e.pageY - mouseStartY + elStartY;
+    const updateRect = () => {
 
         itemEl.style.position = 'absolute';
-        itemEl.style.width = `${width}px`;
-        itemEl.style.height = `${height}px`;
+        itemEl.style.width = `${elCurrentX.toFixed(0)}px`;
+        itemEl.style.height = `${elCurrentY.toFixed(0)}px`;
+    }
+
+    const onMouseMove = (e) => {
+        e.preventDefault();
+        if (!isDown) {
+            return;
+        }
+        elCurrentX = e.pageX - mouseStartX + elStartX;
+        elCurrentY = e.pageY - mouseStartY + elStartY;
+        window.requestAnimationFrame(updateRect);
+    };
+
+    const onMouseUp = (e) => {
+        e.preventDefault();
+        isDown = false;
 
         _.set(item.value, `style`, itemEl.style.cssText);
-        _.set(item.value, `width`, width.toFixed(0));
-        _.set(item.value, `height`, height.toFixed(0));
-    });
+        _.set(item.value, `width`, elCurrentX.toFixed(0));
+        _.set(item.value, `height`, elCurrentY.toFixed(0));
 
-    document.addEventListener('mouseup', (e) => {
-        e.preventDefault();
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+    }
 
-        isDown = false;
-    });
+
 };
 
 const emit = defineEmits([
@@ -122,7 +142,7 @@ const clk = (e) => {
 watch(
     item,
     (newVal, oldVal) => {
-        el_controller.update(item.value.id, newVal);
+        el_ctl.updateData(item.value.id, newVal);
     },
     { deep: true }
 )
@@ -130,6 +150,7 @@ watch(
 const form = ref({
     file: null,
 })
+
 const itemUpload = async (e) => {
 
     form.file = e.target.files[0];
@@ -138,7 +159,7 @@ const itemUpload = async (e) => {
         forceFormData: true,
         replace: true,
         onSuccess: (page) => {
-            item.value.src = page.props.flash?.upload?.url;
+            item.value.url = page.props.flash?.upload?.url;
         }
     });
 }
@@ -146,34 +167,34 @@ const itemUpload = async (e) => {
 </script>
 
 <template>
-    <div @click="el_controller.active(item.id)" :id="item.id" class="absolute select-none"
+    <div @click="el_ctl.active(item)" :id="item.id" class="absolute select-none"
         :style="[item.style, `width: ${item.width}px; height: ${item.height}px;`]" :class="[
-            { 'ring ring-indigo-100 ring-offset-1': item.active },
-            item.class,
+            { 'ring ring-indigo-100 ring-offset-1': el_ctl.isActive(item) },
+            item.class, 'z-30'
         ]">
         <!-- configuration -->
         <Teleport defer to="#configContainer">
-            <div v-if="item.active" class="flex flex-col">
+            <div v-if="el_ctl.isActive(item)" class="flex flex-col text-sm gap-y-4">
                 <!-- size -->
-                <div class="w-full">
+                <div class="w-full flex flex-col">
                     <label for="">宽 - 高 (px)</label>
                     <div class="flex flex-row w-fit gap-x-2 align-middle items-center">
-                        <input id="item-width" v-model="item.width" class="w-20"
+                        <input id="item-width" v-model="item.width" class="w-20 "
                             :placeholder="item.width ?? `宽`"></input>
                         <span> - </span>
-                        <input id="item-height" v-model="item.height" class="w-20"
+                        <input id="item-height" v-model="item.height" class="w-20 "
                             :placeholder="item.height ?? `高`"></input>
                     </div>
                 </div>
 
                 <!-- item -->
-                <div class="w-full">
-                    <label for="item-src">URL</label>
+                <div class="w-full flex flex-col">
+                    <label for="item-url">URL</label>
                     <div class="flex flex-row w-fit gap-x-2 align-middle items-center">
-                        <input id="item-src" v-model="item.src" class="w-full text-left truncate"
+                        <input id="item-url" v-model="item.url" class="w-full text-left truncate"
                             placeholder="请贴入背景URL" />
                         <!-- custom file upload -->
-                        <form class="flex items-center justify-center bg-white w-14 aspect-square">
+                        <form class="flex items-center justify-center bg-white h-9 aspect-square">
                             <div
                                 class="h-full rounded border border-gray-400 flex justify-center items-center hover:bg-blue-200">
                                 <div class="absolute">
@@ -187,31 +208,31 @@ const itemUpload = async (e) => {
                         </form>
 
                     </div>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-300" id="file_input_help">SVG, PNG, JPG</p>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-300" id="file_input_help">JPG</p>
                 </div>
 
                 <!-- class -->
-                <div>
+                <div class="w-full flex flex-col">
                     <label for="item-class">Class</label>
                     <textarea id="item-class" v-model="item.class"></textarea>
                 </div>
                 <!-- style -->
-                <div>
+                <div class="w-full flex flex-col">
                     <label for="item-style">Style</label>
                     <textarea id="item-style" v-model="item.style"></textarea>
                 </div>
             </div>
         </Teleport>
 
-        <div class="w-full h-full relative bg-contain bg-no-repeat" :style="`background-image:url(${item.src})`">
-            <div v-if="item.active" @click.prevent="el_controller.del(item.id)"
+        <div class="w-full h-full relative bg-contain bg-no-repeat" :style="`background-image:url(${item.url})`">
+            <div v-if="el_ctl.isActive(item)" @click.stop.prevent="el_ctl.del(item.id)"
                 class="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 bg-black/80 ring ring-white rounded-full aspect-square w-9 grid items-center justify-center">
                 <span class='text-base'>❌</span>
             </div>
-            <div v-resize v-if="item.active"
+            <div v-resize v-if="el_ctl.isActive(item)"
                 class="absolute bottom-0 right-0 translate-x-1/2 translate-y-1/2 bg-white ring ring-white rounded-full aspect-square w-[2vmin] grid items-center justify-center shadow">
             </div>
-            <div v-draggable :src="item.src" alt="图片" class="w-full h-full" />
+            <div v-draggable alt="图片" class="w-full h-full" />
         </div>
     </div>
 </template>

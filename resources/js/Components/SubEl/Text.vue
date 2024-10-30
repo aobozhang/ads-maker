@@ -8,17 +8,18 @@ const props = defineProps({
         type: Object,
         default: {},
     },
+    isActive: {
+        type: Boolean,
+        default: false,
+    }
 });
 
 const item = ref(props.item);
-const { el_model, el_controller } = inject('GLOBAL_CREATE_AND_EDIT');
+const { el_model, el_ctl } = inject('GLOBAL_CREATE_AND_EDIT');
 
 const vDraggable = (el, binding) => {
 
     let rect = el.getBoundingClientRect();
-
-    const oriWidth = rect.width;
-    const oriHeight = rect.height;
 
     // 设置拖动元素的初始位置和尺寸
     el.draggable = "true";
@@ -26,37 +27,59 @@ const vDraggable = (el, binding) => {
     let mouseStartY = 0;
     let elStartX = 0;
     let elStartY = 0;
+    let elCurrentX = 0;
+    let elCurrentY = 0;
     let isDown = false;
+    let initWidth = rect.width;
+    let initHeight = rect.height;
 
     el.ondragstart = () => false;
     el.addEventListener('mousedown', (e) => {
-
-        el_controller.active(item.value.id);
-
         isDown = true;
         elStartX = el.offsetLeft;
         elStartY = el.offsetTop;
         mouseStartX = e.pageX;
         mouseStartY = e.pageY;
+
+        el.addEventListener('mousemove', onMouseMove);
+        el.addEventListener('mouseup', onMouseUp);
     });
 
-    document.addEventListener('mousemove', (e) => {
+    const onMouseUp = () => {
+        isDown = false;
 
-        if (!isDown) return;
-
-        var x = e.pageX - mouseStartX + elStartX;
-        var y = e.pageY - mouseStartY + elStartY;
-
-        el.style.position = 'absolute';
-        el.style.top = `${y}px`;
-        el.style.left = `${x}px`;
-        el.style.width = `${oriWidth}px`;
-        el.style.height = `${oriHeight}px`;
+        el.style.width = 'fit-content';
+        el.style.height = 'fit-content';
 
         _.set(item.value, `style`, el.style.cssText);
-    });
 
-    document.addEventListener('mouseup', () => {
+        el.removeEventListener('mousemove', onMouseMove);
+        el.removeEventListener('mouseup', onMouseUp);
+
+    }
+
+    const updatePosition = () => {
+        el.style.position = 'absolute';
+        el.style.top = `${elCurrentY}px`;
+        el.style.left = `${elCurrentX}px`;
+        el.style.width = `${initWidth}px`;
+        el.style.height = `${initHeight}px`;
+    }
+
+    const onMouseMove = (e) => {
+
+        e.preventDefault();
+
+        if (!isDown) return;
+        elCurrentX = e.pageX - mouseStartX + elStartX;
+        elCurrentY = e.pageY - mouseStartY + elStartY;
+
+        window.requestAnimationFrame(updatePosition);
+    }
+
+    el.addEventListener('mousemove', onMouseMove);
+
+    el.addEventListener('mouseup', () => {
         isDown = false;
         el.style.width = 'fit-content';
         el.style.height = 'fit-content';
@@ -74,7 +97,7 @@ const clk = (e) => {
 watch(
     item,
     (newVal, oldVal) => {
-        el_controller.update(item.value.id, item.value);
+        el_ctl.updateData(item.value.id, newVal);
     },
     { deep: true }
 )
@@ -82,25 +105,26 @@ watch(
 </script>
 
 <template>
-    <div v-draggable class="absolute select-none" :style="item.style" :class="[
-        { 'ring-1 ring-pink-100 ring-offset-4': item.active },
+    <div @click="el_ctl.active(item)" v-draggable class="absolute select-none" :style="item.style" :class="[
+        { 'ring-1 ring-pink-100 ring-offset-4': el_ctl.isActive(item) },
         item.class,
+        'z-40'
     ]">
         <!-- configuration -->
         <Teleport defer to="#configContainer">
-            <div v-if="item.active" class="flex flex-col">
+            <div v-if="el_ctl.isActive(item)" class="flex flex-col text-sm gap-y-4 py-4">
                 <!-- content -->
-                <div>
+                <div class="w-full flex flex-col">
                     <label for="text-content">内容</label>
                     <textarea id="text-content" v-model="item.innerHTML" :placeholder="item.placeholder"></textarea>
                 </div>
                 <!-- class -->
-                <div>
+                <div class="w-full flex flex-col">
                     <label for="text-class">Class</label>
                     <textarea id="text-class" v-model="item.class"></textarea>
                 </div>
                 <!-- style -->
-                <div>
+                <div class="w-full flex flex-col">
                     <label for="text-style">Style</label>
                     <textarea id="text-style" v-model="item.style"></textarea>
                 </div>
@@ -108,7 +132,7 @@ watch(
         </Teleport>
 
         <div class="w-full h-full relative">
-            <div v-if="item.active" @click="el_controller.del(item.id)"
+            <div v-if="el_ctl.isActive(item)" @click.prevent="el_ctl.del(item.id)"
                 class="absolute top-0 right-0 translate-x-full -translate-y-full bg-black/80 ring ring-white rounded-full aspect-square w-9 grid items-center justify-center">
                 <span class='text-base'>❌</span>
             </div>

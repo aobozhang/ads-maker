@@ -1,117 +1,212 @@
 <script setup>
-import { computed, ref, onMounted, onBeforeMount, watch, provide } from 'vue';
+import { computed, ref, nextTick, onBeforeMount, onBeforeUnmount, watch, provide } from 'vue';
 import GradientText from "@/Components/GradientText.vue";
 import moment from 'moment'
-import _ from 'lodash-es';
+import _, { template, templateSettings } from 'lodash-es';
 import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 import Element from "@/Components/Element.vue";
+import AdsItems from "@/Components/AdsItem/Index.vue";
 import { v4 as uuidv4 } from "uuid";
 import { toBlob } from 'html-to-image';
 
 const props = defineProps({
+    adsItems: {
+        type: Object,
+        default: {},
+    },
     item: {
         type: Object,
         default: {},
     },
 });
 
-const item = ref(props.item);
+const adsItems = computed(() => props.adsItems);
 
-const el_actived = ref(null);
-const el_model = ref(localStorage.getItem('templateSave') ? JSON.parse(localStorage.getItem('templateSave')) : {});
-const el_controller = {
-    active: (id = null) => {
-
-        const old_actived = el_actived.value;
-
-        // 有对象，就射对象
-        if (id !== null) {
-            if (id === old_actived) {
-                return;
+const el_model = ref(props.item?.config ?? {
+    base: {
+        default: {
+            text: {
+                class: `text-white text-3xl font-bold bg-black/70 px-8 py-6 rounded-lg -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2`,
+                style: ``,
+            },
+            picture: {
+                class: ``,
+                style: ``,
             }
-            _.set(el_model.value, `${id}.active`, true);
-        }
-
-        // 有前对象，就否前对象
-        if (old_actived !== null) {
-            _.set(el_model.value, `${old_actived}.active`, false);
-        }
-
-        // 宣告当前对象
-        el_actived.value = id;
+        },
+        auxiliary: true,
+        width: 720,
+        height: 1280,
     },
-    add: (type) => {
-        let el = {};
-        el.id = uuidv4();
-        el.type = type;
+    data: []
+});
 
-        switch (type) {
-            case 'text':
-                el.placeholder = '请输入内容';
-                if (main.value.defaultClass) {
-                    el.class = main.value.defaultClass;
-                    el.style = main.value.defaultStyle;
-                } else {
-                    el.class = `w-fit text-white text-3xl font-bold bg-black/70 px-8 py-6 rounded-lg -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2`;
-                    el.style = null;
-                }
-                break;
-            case 'image':
-                el.src = "https://placehold.co/50x50";
-                el.placeholder = '图片';
-                el.class = `w-[50px] h-[50px] aspect-auto -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2`;
-                break;
-            case 'main':
-                el.id = type;
-                el.src = "https://placehold.co/720x1280";
-                el.placeholder = '主背景';
-                el.class = 'absolute left-0 top-0 bg-cover -index-50';
-                el.defaultClass = `text-white text-3xl font-bold bg-black/70 px-8 py-6 rounded-lg -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2`;
-                el.defaultStyle = null;
-                el.auxiliary = true;
-                el.width = 720;
-                el.height = 1280;
-                main.value = el;
-                break;
-            default:
-                break;
-        }
-
-        el_model.value[el.id] = el;
-        el_controller.active(el.id);
-        return el.id;
-    },
-
-    update: (id, val) => {
-        _.set(el_model.value, `${id}`, val);
-
-        if (_.get(el_model.value, `${id}.type`) === 'text' && main.value.defaultClass === 'null') {
-            main.value.defaultClass = _.get(el_model.value, `${id}.class`);
-        }
-
-        localStorage.setItem('templateSave', JSON.stringify(el_model.value));
-    },
-
-    del: (id) => {
-        console.log(id);
-        console.log(el_model.value);
-        delete el_model.value[id];
-        el_actived.value = null;
-        localStorage.setItem('templateSave', JSON.stringify(el_model.value));
-    },
-};
-
-const main = ref(_.get(el_model.value, 'main', null));
-
+const base = ref();
+const data = ref();
 watch(
-    main,
-    (newVal, oldVal) => {
-        el_controller.update('main', main.value);
+    base,
+    (n, o) => {
+        _.set(el_model.value, 'base', n);
     },
-    { deep: true }
+    { deep: true },
 )
 
-provide("GLOBAL_CREATE_AND_EDIT", { el_model, el_controller });
+watch(
+    data,
+    (n, o) => {
+        _.set(el_model.value, 'data', n);
+    },
+    { deep: true },
+)
+
+const el_actived = ref();
+
+let cacheMark = false;
+let cacheInterval = null;
+
+const el_ctl = {
+    init: () => {
+        cacheInterval = setInterval(() => {
+            cacheMark = false;
+        }, 60 * 1000);
+
+        let cacheTime = localStorage.getItem(`templateUpdated_${props.item?.id ?? 'tmp'}`);
+        let cacheM = moment(cacheTime, 'YYYY-MM-DD HH:mm:ss');
+        let modelM = moment(_.get(props.item, 'updated_at', '1970-1-1 00:00:00'), 'YYYY-MM-DD HH:mm:ss');
+
+        if (props.item == {} || cacheM.isAfter(modelM)) {
+            console.log('read from cache');
+
+            el_model.value = JSON.parse(localStorage.getItem(`templateSave_${props.item?.id ?? 'tmp'}`)) ?? {};
+            console.log(el_model.value);
+        }
+
+        base.value = el_model.value.base;
+        data.value = el_model.value.data;
+    },
+    isActive: (item) => {
+        return item.id === el_actived.value?.id;
+    },
+    active: async (item) => {
+        await nextTick();
+        el_actived.value = item;
+    },
+    addText: () => {
+        let el = {
+            id: uuidv4(),
+            type: "text",
+            placeholder: '请输入内容',
+            class: `w-fit text-white text-3xl font-bold bg-black/70 px-8 py-6 rounded-lg -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2`,
+            style: null,
+        };
+
+        el_model.value.data.push(el);
+        el_ctl.active(el);
+        el_ctl.cache(true);
+
+    },
+    addPicture: (config = null) => {
+
+        let el = {
+            id: uuidv4(),
+            type: "picture",
+            placeholder: '图片',
+            width: 200,
+            height: 100,
+            style: `width:200px;height:100px;left:50%;top:50%;`,
+            url: 'https://placehold.co/200x100',
+            class: `bg-contain`,
+        };
+
+        if (_.has(config, 'url')) {
+            el.url = config.url;
+        }
+
+
+        data.value.push(el);
+        el_ctl.active(el);
+        el_ctl.cache(true);
+    },
+
+    addMain: async (config = null) => {
+
+        el_ctl.del('main');
+        await nextTick();
+
+        let el = {
+            id: "main",
+            type: "main",
+            placeholder: '图片',
+            class: `bg-cover left-0 top-0 w-full h-full z-0`,
+            style: ``,
+            url: 'https://placehold.co/720x1280',
+        };
+
+        if (_.has(config, 'url')) {
+            el.url = config.url;
+        }
+
+        data.value.unshift(el);
+        el_ctl.active(el);
+        el_ctl.cache(true);
+    },
+
+    updateBase: (key, value) => {
+        _.set(base.value, key, value);
+    },
+
+    updateData: (id, val, key = null) => {
+        let index = _.findIndex(data.value, { id: id });
+        // 新建属性push进去
+        if (index === -1) {
+            let t = {};
+            if (key) {
+                t[key] = val;
+            } else {
+                t = val;
+            }
+            data.value.push(t);
+        } else if (key) {
+            data.value[index][key] = val;
+        } else {
+            data.value[index] = val;
+        }
+
+        el_ctl.cache(true);
+    },
+
+    find: (id) => {
+        const index = _.findIndex(data.value, { id: id });
+        return _.nth(data.value, index, null);
+    },
+    delByIndex: async (index) => {
+        let res = data.value.splice(index, 1);
+        console.log(res[0]);
+        await el_ctl.cache(true);
+    },
+    del: async (id) => {
+        let res = _.remove(data.value, (i) => i.id === id);
+        console.log(res[0]);
+        await el_ctl.cache(true);
+        return res;
+    },
+
+    clear: () => {
+        el_model.value = data.value.filter(n => n);
+    },
+    cache: async (force = false) => {
+        if (cacheMark && !force) {
+            return;
+        }
+        await nextTick();
+        localStorage.setItem(`templateUpdated_${props.item?.id ?? 'tmp'}`, moment().format('YYYY-MM-DD HH:mm:ss'));
+        localStorage.setItem(`templateSave_${props.item?.id ?? 'tmp'}`, JSON.stringify(el_model.value));
+        cacheMark = true;
+        console.log('cached');
+    }
+};
+
+provide("GLOBAL_CREATE_AND_EDIT", { el_model, el_ctl });
 
 const saveJpeg = async (query, forceCreate = false) => {
 
@@ -119,103 +214,42 @@ const saveJpeg = async (query, forceCreate = false) => {
 
     toBlob(node, {
         backgroundColor: '#ffffff',
-        width: main.value.width,
-        height: main.value.height,
+        width: el_model.value.base.width,
+        height: el_model.value.base.height,
         quality: 0.8,
     }).then(function (blob) {
 
-        var data = new FormData();
-        let _page;
-
-        data.append('file', blob);
-        for (const key in item.value) {
-            data.append(key, item.value[key]);
-        }
-
         if (forceCreate) {
-            router.post(route('ads-image.store'), data, {
-                forceFormData: true,
-                onSuccess: (page) => {
-                    item.value = page.props.item;
+            var form = useForm({
+                config: el_model.value,
+                file: blob,
+            });
 
-                }
+            form.post(route('ads-image.store'));
+        } else if (el_model.value.id) {
+            var form = useForm({
+                config: el_model.value,
+                file: blob,
+                '_method': 'PUT'
             });
-        } else if (item.value.id) {
-            router.put(route('ads-image.update', item.value.id), data, {
-                forceFormData: true,
-                onSuccess: (page) => {
-                    item.value = page.props.item;
-                }
-            });
+
+
+            form.post(route('ads-image.update', props.item.id));
         } else {
-            router.post(route('ads-image.store'), data, {
-                forceFormData: true,
-                onSuccess: (page) => {
-                    item.value = page.props.item;
-
-                }
+            var form = useForm({
+                config: el_model.value,
+                file: blob,
             });
+
+            form.post(route('ads-image.store'));
         }
 
-    }).then(() => {
-        console.log(item.value);
-        const a = document.createElement('a');
-        a.href = route('ads-image.down', item.value.id);
-        a.target = '_blank';
-        a.click();
     });
-}
-
-function exportAsJSON(data, filename) {
-    const jsonData = JSON.stringify(data, null, 2);
-    const blob = new Blob([jsonData], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-}
-
-const exportJson = () => {
-
-    const myData = localStorage.getItem(`adsImageMaker-data`);
-    let date = moment();
-    let dateStr = date.format("YYYYMMDD_HHmmss");
-    const filename = `adsImageMaker-${dateStr}.json`;
-
-    exportAsJSON(myData, filename);
-}
-
-const importJson = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-
-    input.addEventListener('change', function (event) {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                try {
-                    const jsonData = JSON.parse(e.target.result);
-                    localStorage.setItem(`adsImageMaker-data`, jsonData);
-                    alert('导入成功');
-                } catch (error) {
-                    alert('文件不是有效的 JSON 格式。');
-                }
-            };
-            reader.readAsText(file);
-        }
-    });
-
-    input.click();
 }
 
 const handleElementClick = (e) => {
     console.log(e);
 }
-
 
 const mainUpload = async (e) => {
 
@@ -223,159 +257,215 @@ const mainUpload = async (e) => {
         file: e.target.files[0]
     };
 
-    router.post(route('ads-image.upload'), data, {
+    router.post(route('ads-item.store'), data, {
         forceFormData: true,
         replace: true,
         onSuccess: (page) => {
-            main.value.src = page.props.flash?.upload?.url;
+            el_ctl.updateData('main', page.props.flash?.upload?.url, 'url');
         }
     });
 }
 
-onBeforeMount(() => {
-    if (main.value == null) {
-        el_controller.add('main');
-    }
-})
 
+const confirmData = ref({});
+const confirm = (id) => {
+    _.set(confirmData.value, id, true);
+}
+
+const confirmed = (id) => {
+    return _.get(confirmData.value, id, false);
+}
+
+const confirmReset = () => {
+    confirmData.value = {};
+}
+
+const newTab = (e, url) => {
+    e.preventDefault();
+    window.open(url);
+}
+
+onBeforeMount(() => {
+    el_ctl.init();
+});
+
+onBeforeUnmount(() => {
+    clearInterval(cacheInterval);
+    cacheMark = false;
+    el_ctl.cache();
+})
 </script>
 <template>
     <div class="flex flex-row w-full h-full no-scrollbar">
         <!-- left side bar -->
         <div class="w-64 shrink-0 grow-0 h-lvh px-4 border-r border-gray-300 text-gray-800 flex flex-col">
             <!-- file operation -->
-            <div class="shrink-0 grow-0 w-full flex flex-row flex-wrap gap-1 py-4 border-b broder-gray-300">
+            <div class="shrink-0 grow-0 w-full flex flex-col flex-wrap gap-y-2 py-4 border-b broder-gray-300">
                 <Link :href="route('ads-image.index')"
-                    class="bg-gray-800 text-white w-fit px-4 py-2 text-sm rounded-lg text-center">返回
+                    class="bg-gray-800 text-white w-full px-4 py-2 text-sm rounded text-center">查看列表全部
                 </Link>
-                <template v-if="item.id">
+
+                <div v-if="item.id" class="flex flex-row text-xs gap-x-2">
                     <a @click="saveJpeg(`#SavePicture`)" as="button" type="button"
-                        class="bg-blue-400 text-white w-fit px-4 py-2 text-sm rounded-lg text-center">更新
+                        class="bg-blue-400 text-white w-fit px-4 py-2 rounded text-center">保存
                     </a>
                     <a @click="saveJpeg(`#SavePicture`, true)" as="button" type="button"
-                        class="bg-blue-400 text-white w-fit px-4 py-2 text-sm rounded-lg text-center">保存副本
+                        class="bg-blue-400 text-white w-fit px-4 py-2 rounded text-center">另存
                     </a>
-                </template>
+                    <a :href="route('ads-image.down', item.id)" target="_blank" as="button" type="button"
+                        class="bg-blue-400 text-white w-fit px-4 py-2 rounded text-center">下载
+                    </a>
+                </div>
                 <a v-else @click="saveJpeg(`#SavePicture`)" as="button" type="button"
-                    class="bg-blue-400 text-white w-full py-2 rounded-lg text-center">保存
+                    class="bg-blue-400 text-white w-full py-2 rounded text-center">保存
                 </a>
             </div>
 
             <!-- config editor -->
-            <div id="configContainer" class="grow w-full flex flex-col py-4">
-
-                <div v-if="(!el_actived || main.active) && main" class="flex flex-col gap-y-4">
+            <div id="configContainer" class="grow w-full flex flex-col text-sm gap-y-4 py-4">
+                <div v-if="(!el_actived)" class="flex flex-col gap-y-4">
                     <!-- size -->
-                    <div class="w-full">
+                    <div class="w-full flex flex-col">
                         <label for="">宽 - 高 (px)</label>
                         <div class="flex flex-row w-fit gap-x-2 align-middle items-center">
-                            <input id="main-width" v-model="main.width" class="w-20" :placeholder="720"></input>
+                            <input id="base-width" v-model="base.width" class="w-20" :placeholder="720"></input>
                             <span> - </span>
-                            <input id="main-height" v-model="main.height" class="w-20" :placeholder="1280"></input>
+                            <input id="base-height" v-model="base.height" class="w-20" :placeholder="1280"></input>
                         </div>
                     </div>
 
-                    <!-- main -->
-                    <div class="w-full">
-                        <label for="main-src">URL</label>
-                        <div class="flex flex-row w-fit gap-x-2 align-middle items-center">
-                            <input id="main-src" v-model="main.src" class="w-full text-left truncate"
-                                placeholder="请贴入背景URL" />
-                            <!-- custom file upload -->
-                            <form class="flex items-center justify-center bg-white w-14 aspect-square">
-                                <div
-                                    class="h-full rounded border border-gray-400 flex justify-center items-center hover:bg-blue-200">
-                                    <div class="absolute">
-                                        <div class="flex items-center">
-                                            <span class="block text-gray-800 font-normal">传</span>
-                                        </div>
-                                    </div>
-                                    <input id="mainFile" type="file" class="h-full w-full opacity-0" name="mainFile"
-                                        @input="mainUpload($event)">
-                                </div>
-                            </form>
-
-                        </div>
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-300" id="file_input_help">SVG, PNG, JPG</p>
-                    </div>
-                    <!-- class -->
-                    <div>
-                        <label for="default-class">default Class</label>
-                        <textarea id="default-class" v-model="main.defaultClass"></textarea>
-                    </div>
-                    <!-- style -->
-                    <div>
-                        <label for="default-style">default Style</label>
-                        <textarea id="default-style" v-model="main.defaultStyle"></textarea>
-                    </div>
+                    <hr>
                     <!-- 辅助线 -->
                     <div>
                         <label for="default-auxiliary">辅助线：</label>
-                        <input id="default-auxiliary" v-model="main.auxiliary" type="checkbox" />
+                        <input id="default-auxiliary" v-model="base.auxiliary" type="checkbox" />
                     </div>
+
                 </div>
             </div>
 
             <!-- data operation -->
-            <div class="shrink-0 grow-0 flex flex-col gap-y-3 border-t py-4 border-gray-300">
-                <div @click="el_controller.active(key)" class="w-full truncate flex flex-row gap-x-3"
-                    v-for="(layer, key, index) in el_model">
-                    <span class="border-r border-gray-200 pr-2">{{ layer.type }}</span>
+            <div class="shrink-0 grow-0 flex flex-col gap-y-2 text-xs border-t py-4 border-gray-300">
+                <div v-for="(layer, index) in data" @click="el_ctl.active(layer)" :key="layer.id"
+                    class="w-full truncate flex flex-row gap-x-3 group relative">
+                    <span class="border-r border-gray-200 pr-2">{{ layer.type ?? 'Null' }}</span>
                     <div class="grow overflow-hidden flex"
                         :class="{ 'flex-row-reverse': layer.type === 'main' || layer.type === 'image', 'flex-row': layer.type == 'text' }">
                         <span class="w-fit text-right">
                             {{ layer.type == 'main'
-                                ? layer.src
+                                ? layer.url
                                 : layer.type == 'text'
                                     ? layer.innerHTML
-                                    : layer.type == 'image'
-                                        ? layer.src
-                                        : ''
+                                    : layer.type == 'picture'
+                                        ? layer.url
+                                        : 'Null'
                             }}
                         </span>
+                    </div>
+                    <!-- 激活标识 -->
+                    <div v-if="el_ctl.isActive(layer)"
+                        class="absolute left-0 -translate-x-1/2 top-1/2 -translate-y-1/2 w-4 bg-blue-500 rounded-full aspect-square">
+                    </div>
+                    <!-- 删除键 -->
+                    <div @click="el_ctl.delByIndex(index)"
+                        class="absolute right-0 top-1/2 -translate-y-1/2 invisible group-hover:visible px-1 py-0.5 bg-gray-200 border border-gray-300 text-xs">
+                        DEL
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- right area -->
+        <!-- Main area -->
         <div class="grow p-4 relative h-lvh bg-indigo-100">
 
             <div
                 class="fixed top-40 z-40 text-center w-fit flex flex-col justify-center px-2 py-3 select-none items-center bg-gray-50 rounded shadow-lg">
                 <span class=" border-gray-200 text-xs text-gray-600 pb-2 shadow shadow-white">添加</span>
-                <div @click="el_controller.add('text')"
+                <div @click="el_ctl.addText"
                     class="w-8 text-xs border-x border-t border-gray-300 aspect-square grid items-center text-center hover:bg-blue-200 hover:text-gray-800 text-gray-600">
                     <span>文</span>
                 </div>
-                <div @click="el_controller.add('image')"
+                <div @click="el_ctl.addPicture"
                     class="w-8 text-xs border-x border-t last:border-b border-gray-300 aspect-square grid items-center text-center hover:bg-blue-200 hover:text-gray-800 text-gray-600">
                     <span>图</span>
+                </div>
+                <div @click="el_ctl.addMain"
+                    class="w-8 text-xs border-x border-t last:border-b border-gray-300 aspect-square grid items-center text-center hover:bg-blue-200 hover:text-gray-800 text-gray-600">
+                    <span>背</span>
                 </div>
             </div>
 
             <div
                 class="grow  py-5 w-full flex flex-row justify-center max-w-6xl min-w-[720px] h-full overflow-y-scroll no-scrollbar overflow-x-auto">
 
-                <div class="relative" :class="main.rootClass"
-                    :style="`width:${main.width}px;height:${main.height}px;${main.rootStyle}`">
+                <div class="relative" :style="`width:${base.width}px;height:${base.height}px;`">
                     <!-- 辅助线 -->
-                    <div v-if="main.auxiliary"
+                    <div v-if="base.auxiliary"
                         class="absolute !aspect-square pointer-events-none w-full border-dashed border-y-2 border-gray-200 z-40 top-1/2 left-0 -translate-y-1/2 flex flex-row-reverse">
                         <div class="h-full w-[10%] border-l-2 border-gray-200 border-dashed"></div>
                     </div>
+
                     <!-- TARGET AREA -->
-                    <div id="SavePicture" @click.self="el_controller.active(null)" class="relative overflow-hidden"
-                        :class="main.rootClass"
-                        :style="`width:${main.width}px;height:${main.height}px;${main.rootStyle}`">
-
-                        <Element v-for="(item, key, index) in el_model" :item="item" @clk="handleElementClick">
-                        </Element>
-
+                    <div id="SavePicture" @click.self="el_ctl.active(null)" class="relative overflow-hidden"
+                        :style="`width:${base.width}px;height:${base.height}px;`">
+                        <transition-group name="ele">
+                            <Element v-for="(item, index) in data" :key="item.id" :item="item" @clk="handleElementClick"
+                                :isActived="el_ctl.isActive(item)">
+                            </Element>
+                        </transition-group>
                     </div>
                 </div>
             </div>
 
         </div>
+
+        <!-- right side bar -->
+        <div
+            class="w-64 shrink-0 grow-0 py-4 h-lvh border-l border-gray-300 text-gray-800 overflow-y-auto no-scrollbar overflow-x-hidden">
+            <AdsItems :adsItems="adsItems"></AdsItems>
+        </div>
     </div>
 </template>
+<style lang="less">
+textarea,
+input {
+    @apply text-xs;
+}
+
+.list-move,
+/* 对移动中的元素应用的过渡 */
+.list-enter-active,
+.list-leave-active {
+    transition: all 0.5s ease;
+}
+
+.list-enter-from,
+.list-leave-to {
+    opacity: 0;
+    transform: scale(0);
+}
+
+/* 确保将离开的元素从布局流中删除
+  以便能够正确地计算移动的动画。 */
+.list-leave-active {
+    position: absolute;
+}
+
+.ele-move,
+/* 对移动中的元素应用的过渡 */
+.ele-enter-active,
+.ele-leave-active {
+    transition: all 0.3s ease;
+}
+
+.ele-enter-from,
+.ele-leave-to {
+    opacity: 0;
+}
+
+/* 确保将离开的元素从布局流中删除
+  以便能够正确地计算移动的动画。 */
+.ele-leave-active {
+    position: absolute;
+}
+</style>

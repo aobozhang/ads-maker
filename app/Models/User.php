@@ -54,7 +54,7 @@ class User extends Authenticatable
      */
     public function ads_images()
     {
-        return $this->hasMany(AdsImage::class, 'user_id', 'id');
+        return $this->hasMany(AdsImage::class);
     }
 
     /**
@@ -63,6 +63,6 @@ class User extends Authenticatable
      */
     public function ads_items()
     {
-        return $this->hasMany(AdsItem::class, 'user_id', 'id');
+        return $this->hasMany(AdsItem::class);
     }
 }
