@@ -253,7 +253,6 @@ const saveJpeg = async (query, forceCreate = false) => {
                 '_method': 'PUT'
             });
 
-
             form.post(route('ads-image.update', props.item.id));
         } else {
             var form = useForm({

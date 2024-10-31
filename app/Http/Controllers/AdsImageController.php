@@ -56,7 +56,7 @@ class AdsImageController extends Controller
 
         $adsImage = $request->user()->ads_images()->create($data);
 
-        return redirect(route('ads-image.show', $adsImage));
+        return redirect()->route('ads-image.show', $adsImage);
     }
 
     /**
