@@ -3,7 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayoutPlus.vue';
 import { computed, ref, nextTick, onBeforeMount, onBeforeUnmount, watch, provide } from 'vue';
 import moment from 'moment'
 import _ from 'lodash-es';
-import { Link, useForm } from '@inertiajs/vue3';
+import { Link, router, useForm } from '@inertiajs/vue3';
 import Element from "@/Components/Element.vue";
 import AdsItems from "@/Components/AdsItem/Index.vue";
 import { v4 as uuidv4 } from "uuid";
@@ -201,6 +201,10 @@ const el_ctl = {
         localStorage.setItem(`templateSave_${props.item?.id ?? 'tmp'}`, JSON.stringify(el_model.value));
         cacheMark = true;
         console.log('cached');
+    },
+    pureCache: async () => {
+        localStorage.clear();
+        data.value = [];
     }
 };
 
@@ -297,7 +301,7 @@ onBeforeUnmount(() => {
     <AuthenticatedLayout>
 
         <template #toolbar>
-            <div class="shrink-0 w-full flex flex-row flex-wrap gap-x-2 py-4 border-b broder-gray-300">
+            <div class="shrink-0 w-full flex flex-row flex-wrap gap-x-2 py-4">
                 <Link :href="route('ads-image.index')" title="返回主页列表">
                 <!-- home icon -->
                 <svg class="w-8 group-disabled:stroke-gray-200 stroke-gray-500" viewBox="0 0 48 48" fill="none"
@@ -355,9 +359,9 @@ onBeforeUnmount(() => {
 
         <div class="flex flex-row w-full h-full no-scrollbar">
             <!-- left side bar -->
-            <div class="w-64 h-lvh px-4 pt-10 pb-5 border-r border-gray-300 text-gray-800 flex flex-col">
+            <div class="w-64 h-lvh px-4 pt-12 pb-4 border-b border-gray-300 text-gray-800 flex flex-col">
                 <!-- config editor -->
-                <div id="configContainer" class="grow w-full flex flex-col text-sm gap-y-4 py-4">
+                <div id="configContainer" class="grow w-full flex flex-col text-sm gap-y-4 pt-4">
                     <div v-if="(!el_actived)" class="flex flex-col gap-y-4">
                         <!-- size -->
                         <div class="w-full flex flex-col">
@@ -376,6 +380,12 @@ onBeforeUnmount(() => {
                             <input id="default-auxiliary" v-model="base.auxiliary" type="checkbox" />
                         </div>
 
+                        <hr>
+                        <!-- function -->
+                        <div>
+                            <button @click="el_ctl.pureCache"
+                                class="w-full py-2 bg-blue-300 rounded text-gray-50">清空画布</button>
+                        </div>
                     </div>
                 </div>
 
@@ -449,6 +459,9 @@ onBeforeUnmount(() => {
                             </div>
                         </template>
                     </draggable>
+                    <div v-if="data.length === 0" class="text-center">
+                        {{ `< 无 \>` }}
+                    </div>
                 </div>
             </div>
 
