@@ -93,10 +93,10 @@ class AdsImageController extends Controller
      */
     public function update(Request $request, AdsImage $adsImage)
     {
-        $name = Carbon::now()->format('Ymd-His-u');
+        $name = Carbon::now()->format('Ymd-His-u') . "." . $request->file->extension();
         $path = $request->file('file')->storePubliclyAs(
             'ads-images',
-            $name . '.jpg',
+            $name,
             'public'
         );
 
@@ -106,8 +106,7 @@ class AdsImageController extends Controller
 
         $adsImage->save();
 
-        return redirect(route('ads-image.show', $adsImage));
-
+        return redirect()->route('ads-image.show', $adsImage);
     }
 
     /**

@@ -246,7 +246,7 @@ const saveJpeg = async (query, forceCreate = false) => {
             });
 
             form.post(route('ads-image.store'));
-        } else if (el_model.value.id) {
+        } else if (props.item.id) {
             var form = useForm({
                 config: el_model.value,
                 file: blob,
