@@ -18,7 +18,7 @@ class AdsImageController extends Controller
     public function index(Request $request)
     {
         return Inertia::render('AdsImage/Index', [
-            'list' => fn() => AdsImage::orderBy('created_at', 'desc')->paginate(30),
+            'list' => fn() => AdsImage::orderBy('updated_at', 'desc')->paginate(30),
         ]);
     }
 
