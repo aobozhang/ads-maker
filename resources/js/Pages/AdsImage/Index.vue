@@ -93,10 +93,10 @@ onMounted(() => {
                     :class="{ 'border-y border-l border-gray-300 bg-white': route().current('ads-image.index') }">
                 主页
                 </Link>
-                <Link :href="route('ads-item.index')" class="py-4 pl-12 pr-8 text-right text-xl w-fit rounded-l -mr-px"
+                <div class="py-4 pl-12 pr-8 text-right text-xl w-fit rounded-l -mr-px text-gray-500"
                     :class="{ 'border-y border-l border-gray-300 bg-white': route().current('ads-item.index') }">
-                素材
-                </Link>
+                    素材
+                </div>
             </div>
             <!-- main list -->
             <div class="grow p-8 h-full flex flex-col  bg-white">
