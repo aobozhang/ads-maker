@@ -22,7 +22,7 @@ const { el_ctl } = inject('GLOBAL_CREATE_AND_EDIT');
 
 const vDraggable = (el, binding) => {
 
-    let mainEl = document.getElementById(item.value.id);
+    let mainEl = document.getElementById(binding.value);
     let rect = mainEl.getBoundingClientRect();
 
     // 设置拖动元素的初始位置和尺寸
@@ -37,9 +37,18 @@ const vDraggable = (el, binding) => {
 
     el.ondragstart = () => false;
     el.addEventListener('mousedown', (e) => {
-        e.preventDefault();
 
         isDown = true;
+
+        mainEl.classList.remove("silence");
+        mainEl.classList.add("!z-50");
+        let doms = document.getElementsByClassName("silence");
+        for (var dom of doms) {
+            dom.classList.add("pointer-events-none");
+        }
+
+        e.preventDefault();
+
         elStartX = mainEl.offsetLeft;
         elStartY = mainEl.offsetTop;
         mouseStartX = e.pageX;
@@ -63,9 +72,18 @@ const vDraggable = (el, binding) => {
         elCurrentY = e.pageY - mouseStartY + elStartY;
         window.requestAnimationFrame(updatePosition);
     }
+
     const onMouseUp = (e) => {
         e.preventDefault();
         isDown = false;
+
+        let doms = document.getElementsByClassName("silence");
+        for (var dom of doms) {
+            dom.classList.remove("pointer-events-none");
+        }
+        mainEl.classList.add("silence");
+        mainEl.classList.remove("!z-50");
+
         _.set(item.value, `style`, mainEl.style.cssText);
 
         el.removeEventListener('mousemove', onMouseMove);
@@ -265,7 +283,7 @@ const saveJpeg = async () => {
             <div v-resize v-if="isActived"
                 class="absolute bottom-0 right-0 translate-x-1/2 translate-y-1/2 bg-white ring ring-white rounded-full aspect-square w-[2vmin] grid items-center justify-center shadow">
             </div>
-            <div v-draggable alt="图片" class="w-full h-full" />
+            <div v-draggable="item.id" alt="图片" class="w-full h-full" />
         </div>
     </div>
 </template>

@@ -8,6 +8,7 @@ import Element from "@/Components/Element.vue";
 import AdsItems from "@/Components/AdsItem/Index.vue";
 import { v4 as uuidv4 } from "uuid";
 import { toBlob, toJpeg } from 'html-to-image';
+import draggable from 'vuedraggable'
 
 const props = defineProps({
     adsItems: {
@@ -266,44 +267,96 @@ const saveJpeg = async (query, forceCreate = false) => {
     });
 }
 
+const resetPointer = (e) => {
+
+    let baseDoms = document.getElementsByClassName('base-silence');
+    for (var dom of baseDoms) {
+        dom.classList.add('silence');
+    }
+
+    let doms = document.getElementsByClassName('silence');
+    for (var dom of doms) {
+        dom.classList.remove('pointer-events-none');
+    }
+}
+
 onBeforeMount(() => {
     el_ctl.init();
+    resetPointer();
 });
 
 onBeforeUnmount(() => {
     clearInterval(cacheInterval);
     cacheMark = false;
     el_ctl.cache();
+    resetPointer();
 })
 
 </script>
+
 <template>
     <AuthenticatedLayout>
+
+        <template #toolbar>
+            <div class="shrink-0 w-full flex flex-row flex-wrap gap-x-2 py-4 border-b broder-gray-300">
+                <Link :href="route('ads-image.index')" title="返回主页列表">
+                <!-- home icon -->
+                <svg class="w-8 group-disabled:stroke-gray-200 stroke-gray-500" viewBox="0 0 48 48" fill="none"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M6 18L24 4L42 18V40C42 41.0609 41.5786 42.0783 40.8284 42.8284C40.0783 43.5786 39.0609 44 38 44H10C8.93913 44 7.92172 43.5786 7.17157 42.8284C6.42143 42.0783 6 41.0609 6 40V18Z"
+                        stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M18 44V24H30V44" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                </Link>
+
+                <a :disabled="item.id" title="保存" @click="saveJpeg(`#SavePicture`)" as="button" type="button">
+                    <!-- save icon -->
+                    <svg class="w-8 group-disabled:stroke-gray-200 stroke-gray-500" viewBox="0 0 48 48" fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path d="M14 6V16H30" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                        <path
+                            d="M10 42C8.93913 42 7.92172 41.5786 7.17157 40.8284C6.42143 40.0783 6 39.0609 6 38V10C6 8.93913 6.42143 7.92172 7.17157 7.17157C7.92172 6.42143 8.93913 6 10 6H32L42 16V38C42 39.0609 41.5786 40.0783 40.8284 40.8284C40.0783 41.5786 39.0609 42 38 42H10Z"
+                            stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M34 42V26H14V42" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </a>
+
+                <a :disabled="!item.id" @click="saveJpeg(`#SavePicture`, true)" as="button" type="button" class="group"
+                    title="另存为">
+                    <!-- save as icon -->
+                    <svg class="w-8 group-disabled:stroke-gray-200 stroke-gray-500" viewBox="0 0 48 48" fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M12 8C12 6.93913 12.4214 5.92172 13.1716 5.17157C13.9217 4.42143 14.9391 4 16 4H36L44 12V32.4C43.9005 33.3901 43.4355 34.3076 42.6959 34.9732C41.9563 35.6389 40.9951 36.005 40 36H16C14.9391 36 13.9217 35.5786 13.1716 34.8284C12.4214 34.0783 12 33.0609 12 32V8Z"
+                            stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M20 4V12H32M36 36V22H20V36" stroke-width="4" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M36 44H8C6.93913 44 5.92172 43.5786 5.17157 42.8284C4.42143 42.0783 4 41.0609 4 40V12"
+                            stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+
+                </a>
+
+                <a v-if="item.id" :href="route('ads-image.down', item.id)" target="_blank" as="button" type="button"
+                    title="下载到本地">
+                    <!-- down icon -->
+                    <svg class="w-8 group-disabled:stroke-gray-200 stroke-gray-500" viewBox="0 0 48 48" fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path d="M24 32V16M24 32L32 24M24 32L16 24" stroke-width="4" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path
+                            d="M8 40V12C8 10.9391 8.42143 9.92172 9.17157 9.17157C9.92172 8.42143 10.9391 8 12 8H36C37.0609 8 38.0783 8.42143 38.8284 9.17157C39.5786 9.92172 40 10.9391 40 12V40M44 40H4"
+                            stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </a>
+
+            </div>
+        </template>
+
         <div class="flex flex-row w-full h-full no-scrollbar">
             <!-- left side bar -->
-            <div class="w-64 shrink-0 grow-0 h-lvh px-4 border-r border-gray-300 text-gray-800 flex flex-col">
-                <!-- file operation -->
-                <div class="shrink-0 grow-0 w-full flex flex-col flex-wrap gap-y-2 py-4 border-b broder-gray-300">
-                    <Link :href="route('ads-image.index')"
-                        class="bg-gray-800 text-white w-full px-4 py-2 text-sm rounded text-center">查看列表全部
-                    </Link>
-
-                    <div v-if="item.id" class="flex flex-row text-xs gap-x-2">
-                        <a @click="saveJpeg(`#SavePicture`)" as="button" type="button"
-                            class="bg-blue-400 text-white w-fit px-4 py-2 rounded text-center">保存
-                        </a>
-                        <a @click="saveJpeg(`#SavePicture`, true)" as="button" type="button"
-                            class="bg-blue-400 text-white w-fit px-4 py-2 rounded text-center">另存
-                        </a>
-                        <a :href="route('ads-image.down', item.id)" target="_blank" as="button" type="button"
-                            class="bg-blue-400 text-white w-fit px-4 py-2 rounded text-center">下载
-                        </a>
-                    </div>
-                    <a v-else @click="saveJpeg(`#SavePicture`)" as="button" type="button"
-                        class="bg-blue-400 text-white w-full py-2 rounded text-center">保存
-                    </a>
-                </div>
-
+            <div class="w-64 h-lvh px-4 pt-10 pb-5 border-r border-gray-300 text-gray-800 flex flex-col">
                 <!-- config editor -->
                 <div id="configContainer" class="grow w-full flex flex-col text-sm gap-y-4 py-4">
                     <div v-if="(!el_actived)" class="flex flex-col gap-y-4">
@@ -328,33 +381,75 @@ onBeforeUnmount(() => {
                 </div>
 
                 <!-- data operation -->
-                <div class="shrink-0 grow-0 flex flex-col gap-y-2 text-xs border-t py-4 border-gray-300">
-                    <div v-for="(layer, index) in data" @click="el_ctl.active(layer)" :key="layer.id"
-                        class="w-full truncate flex flex-row gap-x-3 group relative">
-                        <span class="border-r border-gray-200 pr-2">{{ layer.type ?? 'Null' }}</span>
-                        <div class="grow overflow-hidden flex"
-                            :class="{ 'flex-row-reverse': layer.type === 'main' || layer.type === 'image', 'flex-row': layer.type == 'text' }">
-                            <span class="w-fit text-right">
-                                {{ layer.type == 'main'
-                                    ? layer.url
-                                    : layer.type == 'text'
-                                        ? layer.innerHTML
-                                        : layer.type == 'picture'
-                                            ? layer.url
-                                            : 'Null'
-                                }}
-                            </span>
-                        </div>
-                        <!-- 激活标识 -->
-                        <div v-if="el_ctl.isActive(layer)"
-                            class="absolute left-0 -translate-x-1/2 top-1/2 -translate-y-1/2 w-4 bg-blue-500 rounded-full aspect-square">
-                        </div>
-                        <!-- 删除键 -->
-                        <div @click="el_ctl.delByIndex(index)"
-                            class="absolute right-0 top-1/2 -translate-y-1/2 invisible group-hover:visible px-1 py-0.5 bg-gray-200 border border-gray-300 text-xs">
-                            DEL
-                        </div>
-                    </div>
+                <div
+                    class="shrink-0 flex flex-col gap-y-0.5 text-xs border-t py-2 border-gray-300 bg-gray-700 rounded shadow-inner px-1 text-gray-200">
+                    <draggable v-model="data" item-key="id" draggable=".item">
+                        <!-- element -->
+                        <template #item="{ element, index }">
+                            <div @click.prevent="el_ctl.active(element)"
+                                class="select-none w-full truncate flex flex-row gap-x-2 group relative py-0.5 px-1 rounded hover:bg-gray-500"
+                                :class="{ 'bg-gray-500 ': el_ctl.isActive(element), 'item cursor-grab': index > 0, 'cursor-pointer': index == 0 }">
+                                <!-- icon -->
+                                <div v-if="element.type === 'text'">
+                                    <svg class="w-4 stroke-gray-200" viewBox="0 0 48 48" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M40 16H20C17.7909 16 16 17.7909 16 20V40C16 42.2091 17.7909 44 20 44H40C42.2091 44 44 42.2091 44 40V20C44 17.7909 42.2091 16 40 16Z"
+                                            stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                                        <path
+                                            d="M8 32C5.8 32 4 30.2 4 28V8C4 5.8 5.8 4 8 4H28C30.2 4 32 5.8 32 8M24 26V24H36V26M30 24V36M28 36H32"
+                                            stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </div>
+                                <div v-if="element.type === 'picture'">
+                                    <svg class="w-4 stroke-gray-200" viewBox="0 0 48 48" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M8 32C6.93913 32 5.92172 31.5786 5.17157 30.8284C4.42143 30.0783 4 29.0609 4 28V8C4 6.93913 4.42143 5.92172 5.17157 5.17157C5.92172 4.42143 6.93913 4 8 4H28C29.0609 4 30.0783 4.42143 30.8284 5.17157C31.5786 5.92172 32 6.93913 32 8"
+                                            stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                                        <path
+                                            d="M40 16H20C17.7909 16 16 17.7909 16 20V40C16 42.2091 17.7909 44 20 44H40C42.2091 44 44 42.2091 44 40V20C44 17.7909 42.2091 16 40 16Z"
+                                            stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                                        <path
+                                            d="M28 32C30.2091 32 32 30.2091 32 28C32 25.7909 30.2091 24 28 24C25.7909 24 24 25.7909 24 28C24 30.2091 25.7909 32 28 32Z"
+                                            stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                                        <path
+                                            d="M26.7998 44L36.1998 36.2C37.7998 34.6 40.1998 34.6 41.7998 36.2L43.9998 38.4"
+                                            stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </div>
+                                <div v-if="element.type === 'main'">
+                                    <svg class="w-4 stroke-gray-200" viewBox="0 0 48 48" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M20.6 6H10C8.93913 6 7.92172 6.42143 7.17157 7.17157C6.42143 7.92172 6 8.93913 6 10V38C6 39.0609 6.42143 40.0783 7.17157 40.8284C7.92172 41.5786 8.93913 42 10 42H38C39.0609 42 40.0783 41.5786 40.8284 40.8284C41.5786 40.0783 42 39.0609 42 38V20.4"
+                                            stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                                        <path d="M14 24L31 7C35 3 40 3 44 7L33 18H20" stroke-width="4"
+                                            stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </div>
+                                <!-- content -->
+                                <div class="grow overflow-hidden flex"
+                                    :class="{ 'flex-row-reverse': element.type === 'main' || element.type === 'image', 'flex-row': element.type == 'text' }">
+                                    <span class="w-fit text-right">
+                                        {{ element.type == 'main'
+                                            ? element.url
+                                            : element.type == 'text'
+                                                ? element.innerHTML
+                                                : element.type == 'picture'
+                                                    ? element.url
+                                                    : 'Null'
+                                        }}
+                                    </span>
+                                </div>
+                                <!-- delete -->
+                                <div @click="el_ctl.delByIndex(index)"
+                                    class="absolute right-0 top-1/2 -translate-y-1/2 invisible group-hover:visible px-2 py-1 rounded text-white bg-red-400 border border-gray-300 text-xs">
+                                    DEL
+                                </div>
+                            </div>
+                        </template>
+                    </draggable>
                 </div>
             </div>
 
@@ -362,19 +457,47 @@ onBeforeUnmount(() => {
             <div class="grow p-4 relative h-lvh bg-indigo-100">
 
                 <div
-                    class="fixed top-40 z-40 text-center w-fit flex flex-col justify-center px-2 py-3 select-none items-center bg-gray-50 rounded shadow-lg">
+                    class="fixed top-40 z-40 text-center w-fit flex flex-col justify-center px-2 py-3 gap-y-1 select-none items-center bg-gray-50 rounded shadow-lg">
                     <span class=" border-gray-200 text-xs text-gray-600 pb-2 shadow shadow-white">添加</span>
                     <div @click="el_ctl.addText"
-                        class="w-8 text-xs border-x border-t border-gray-300 aspect-square grid items-center text-center hover:bg-blue-200 hover:text-gray-800 text-gray-600">
-                        <span>文</span>
+                        class="w-8 text-xs aspect-square grid items-center text-center hover:bg-blue-200 hover:text-gray-800 text-gray-600 rounded">
+                        <span><svg class="w-8" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M40 16H20C17.7909 16 16 17.7909 16 20V40C16 42.2091 17.7909 44 20 44H40C42.2091 44 44 42.2091 44 40V20C44 17.7909 42.2091 16 40 16Z"
+                                    stroke="#757575" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                                <path
+                                    d="M8 32C5.8 32 4 30.2 4 28V8C4 5.8 5.8 4 8 4H28C30.2 4 32 5.8 32 8M24 26V24H36V26M30 24V36M28 36H32"
+                                    stroke="#757575" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </span>
                     </div>
                     <div @click="el_ctl.addPicture"
-                        class="w-8 text-xs border-x border-t last:border-b border-gray-300 aspect-square grid items-center text-center hover:bg-blue-200 hover:text-gray-800 text-gray-600">
-                        <span>图</span>
+                        class="w-8 text-xs aspect-square grid items-center text-center hover:bg-blue-200 hover:text-gray-800 text-gray-600 rounded">
+                        <span><svg class="w-8" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M8 32C6.93913 32 5.92172 31.5786 5.17157 30.8284C4.42143 30.0783 4 29.0609 4 28V8C4 6.93913 4.42143 5.92172 5.17157 5.17157C5.92172 4.42143 6.93913 4 8 4H28C29.0609 4 30.0783 4.42143 30.8284 5.17157C31.5786 5.92172 32 6.93913 32 8"
+                                    stroke="#757575" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                                <path
+                                    d="M40 16H20C17.7909 16 16 17.7909 16 20V40C16 42.2091 17.7909 44 20 44H40C42.2091 44 44 42.2091 44 40V20C44 17.7909 42.2091 16 40 16Z"
+                                    stroke="#757575" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                                <path
+                                    d="M28 32C30.2091 32 32 30.2091 32 28C32 25.7909 30.2091 24 28 24C25.7909 24 24 25.7909 24 28C24 30.2091 25.7909 32 28 32Z"
+                                    stroke="#757575" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M26.7998 44L36.1998 36.2C37.7998 34.6 40.1998 34.6 41.7998 36.2L43.9998 38.4"
+                                    stroke="#757575" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </span>
                     </div>
                     <div @click="el_ctl.addMain"
-                        class="w-8 text-xs border-x border-t last:border-b border-gray-300 aspect-square grid items-center text-center hover:bg-blue-200 hover:text-gray-800 text-gray-600">
-                        <span>背</span>
+                        class="w-8 text-xs aspect-square grid items-center text-center hover:bg-blue-200 hover:text-gray-800 text-gray-600 rounded">
+                        <span><svg class="w-8" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M20.6 6H10C8.93913 6 7.92172 6.42143 7.17157 7.17157C6.42143 7.92172 6 8.93913 6 10V38C6 39.0609 6.42143 40.0783 7.17157 40.8284C7.92172 41.5786 8.93913 42 10 42H38C39.0609 42 40.0783 41.5786 40.8284 40.8284C41.5786 40.0783 42 39.0609 42 38V20.4"
+                                    stroke="#757575" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M14 24L31 7C35 3 40 3 44 7L33 18H20" stroke="#757575" stroke-width="4"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </span>
                     </div>
                 </div>
 
@@ -404,7 +527,7 @@ onBeforeUnmount(() => {
 
             <!-- right side bar -->
             <div
-                class="w-64 shrink-0 grow-0 py-4 h-lvh border-l border-gray-300 text-gray-800 overflow-y-auto no-scrollbar overflow-x-hidden">
+                class="w-64 bg-white shrink-0 grow-0 py-4 h-lvh border-l border-gray-300 text-gray-800 overflow-y-auto no-scrollbar overflow-x-hidden">
                 <AdsItems :adsItems="adsItems"></AdsItems>
             </div>
         </div>

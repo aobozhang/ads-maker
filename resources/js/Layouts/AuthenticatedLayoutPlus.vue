@@ -13,35 +13,32 @@ const showingNavigationDropdown = ref(false);
 <template>
     <div>
         <div class="min-h-lvh bg-gray-100">
-            <nav class="fixed z-50 top-0 right-10 rounded-b-xl shadow border-b border-gray-100 bg-white w-fit">
+            <nav class="fixed z-50 top-0 left-2 rounded-b-xl shadow border-b border-gray-100 bg-white w-fit">
                 <!-- Primary Navigation Menu -->
-                <div class="w-fit px-4">
+                <div class="w-fit">
                     <div class="flex h-12 justify-start">
-                        <div class="flex">
-                            <!-- Logo -->
-                            <div class="flex shrink-0 items-center">
-                                <Link :href="route('Home')">
-                                <ApplicationLogo class="block h-6 w-auto fill-current text-gray-800" />
-                                </Link>
-                            </div>
 
-                            <!-- Navigation Links -->
-                            <div class="space-x-4 ms-4 flex">
-                                <NavLink :href="route('ads-image.index')" :active="route().current('dashboard')">
-                                    Home
-                                </NavLink>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center ms-4">
+                        <div class="flex items-center">
                             <!-- Settings Dropdown -->
-                            <div class="relative ms-3">
-                                <Dropdown align="right" width="48">
+                            <div class="relative">
+                                <Dropdown align="left" width="48">
                                     <template #trigger>
                                         <span class="inline-flex rounded-md">
-                                            <button type="button"
+                                            <button type="button" :title="$page.props.auth.user.name"
                                                 class="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none">
-                                                {{ $page.props.auth.user.name }}
+                                                <span class="truncate w-12">
+                                                    <svg class="w-8" viewBox="0 0 48 48" fill="none"
+                                                        xmlns="http://www.w3.org/2000/svg">
+                                                        <path
+                                                            d="M23.9999 32C21.9999 32 7.9999 26 5.3999 21C5.9999 19.4 6.9999 18 8.1999 16.6C6.7999 14 5.9999 11.2 5.9999 8C5.9999 6.8 6.7999 6 7.9999 6C12.342 5.95725 16.5459 7.52481 19.7999 10.4C22.586 10.0061 25.4138 10.0061 28.1999 10.4C31.3999 7.6 35.3999 6 39.9999 6C41.1999 6 41.9999 6.8 41.9999 8C41.9999 11.2 41.1999 14 39.7999 16.6C40.9999 18 41.9999 19.4 42.5999 21C39.9999 26 25.9999 32 23.9999 32ZM23.9999 32V26M17.9999 18V19M25.9999 26H21.9999M29.9999 18V19"
+                                                            stroke="#757575" stroke-width="4" stroke-linecap="round"
+                                                            stroke-linejoin="round" />
+                                                        <path
+                                                            d="M12.5999 41C14.2898 39.7094 15.6571 38.0441 16.5941 36.1353C17.5311 34.2266 18.0124 32.1263 17.9999 30H4.3999C5.9999 38 14.1999 44 23.9999 44C34.9999 44 43.9999 36.4 43.9999 27C43.9999 24.8 43.5999 22.8 42.5999 21"
+                                                            stroke="#757575" stroke-width="4" stroke-linecap="round"
+                                                            stroke-linejoin="round" />
+                                                    </svg>
+                                                </span>
 
                                                 <svg class="-me-0.5 ms-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg"
                                                     viewBox="0 0 20 20" fill="currentColor">
@@ -64,45 +61,20 @@ const showingNavigationDropdown = ref(false);
                                 </Dropdown>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                <!-- Responsive Navigation Menu -->
-                <div :class="{
-                    block: showingNavigationDropdown,
-                    hidden: !showingNavigationDropdown,
-                }" class="sm:hidden">
-                    <div class="space-y-1 pb-3 pt-2">
-                        <ResponsiveNavLink :href="route('Home')" :active="route().current('Home')">
-                            Home
-                        </ResponsiveNavLink>
-                    </div>
-
-                    <!-- Responsive Settings Options -->
-                    <div class="border-t border-gray-200 pb-1 pt-4">
-                        <div class="px-4">
-                            <div class="text-base font-medium text-gray-800">
-                                {{ $page.props.auth.user.name }}
-                            </div>
-                            <div class="text-sm font-medium text-gray-500">
-                                {{ $page.props.auth.user.email }}
+                        <div class="flex">
+                            <!-- Navigation Links -->
+                            <div class="space-x-2 me-4 flex flex-row items-center">
+                                <slot name="toolbar" />
                             </div>
                         </div>
 
-                        <div class="mt-3 space-y-1">
-                            <ResponsiveNavLink :href="route('profile.edit')">
-                                Profile
-                            </ResponsiveNavLink>
-                            <ResponsiveNavLink :href="route('logout')" method="post" as="button">
-                                Log Out
-                            </ResponsiveNavLink>
-                        </div>
                     </div>
                 </div>
             </nav>
 
             <!-- Page Content -->
-            <main>
+            <main class="no-scrollbar">
                 <slot />
             </main>
         </div>

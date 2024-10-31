@@ -59,17 +59,47 @@ onMounted(() => {
 </script>
 <template>
     <AuthenticatedLayout>
-        <div class="grow flex flex-row h-lvh max-w-7xl justify-center mx-auto w-full">
+
+        <template #toolbar>
+            <div class="shrink-0 w-full flex flex-row flex-wrap gap-x-2 py-4 border-b broder-gray-300">
+                <Link v-if="false" :href="route('ads-image.index')" title="返回主页列表">
+                <!-- home icon -->
+                <svg class="w-8 group-disabled:stroke-gray-200 stroke-gray-500" viewBox="0 0 48 48" fill="none"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M6 18L24 4L42 18V40C42 41.0609 41.5786 42.0783 40.8284 42.8284C40.0783 43.5786 39.0609 44 38 44H10C8.93913 44 7.92172 43.5786 7.17157 42.8284C6.42143 42.0783 6 41.0609 6 40V18Z"
+                        stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M18 44V24H30V44" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                </Link>
+
+                <Link :href="route('ads-image.create')" title="新建">
+                <svg class="w-8 group-disabled:stroke-gray-200 stroke-gray-500" viewBox="0 0 48 48" fill="none"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M30 24H18M24 18V30M8 40V12C8 10.9391 8.42143 9.92172 9.17157 9.17157C9.92172 8.42143 10.9391 8 12 8H36C37.0609 8 38.0783 8.42143 38.8284 9.17157C39.5786 9.92172 40 10.9391 40 12V40M44 40H4"
+                        stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+
+                </Link>
+
+            </div>
+        </template>
+
+        <div class="grow flex flex-row h-lvh justify-center w-full">
             <!-- left side bar -->
-            <div class="w-64 shrink-0 grow-0 h-lvh px-4 border-r border-gray-300 flex flex-col">
-                <div class="grow w-full flex flex-col py-4">
-                    <Link :href="route('ads-image.create')"
-                        class="bg-blue-400 text-white w-full py-2 rounded-lg text-center">创建
-                    </Link>
-                </div>
+            <div class="w-64 shrink-0 grow-0 h-lvh pl-4 pt-16 border-r border-gray-300 flex flex-col gap-y-4 items-end">
+                <Link :href="route('ads-image.index')" class="py-4 pl-12 pr-8 text-right text-xl w-fit rounded-l -mr-px"
+                    :class="{ 'border-y border-l border-gray-300 bg-white': route().current('ads-image.index') }">
+                主页
+                </Link>
+                <Link :href="route('ads-item.index')" class="py-4 pl-12 pr-8 text-right text-xl w-fit rounded-l -mr-px"
+                    :class="{ 'border-y border-l border-gray-300 bg-white': route().current('ads-item.index') }">
+                素材
+                </Link>
             </div>
             <!-- main list -->
-            <div class="grow p-4 h-full flex flex-col max-w-5xl">
+            <div class="grow p-8 h-full flex flex-col  bg-white">
                 <div class="grow flex flex-col gap-y-5">
                     <div v-for="(items, key, index) in catg" :key="key">
                         <div class="w-full border-b border-gray-400 py-4">

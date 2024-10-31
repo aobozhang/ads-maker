@@ -6,6 +6,7 @@ export default {
     safelist: [
         "bg-black",
         "bg-white",
+        "!z-50",
         {
             pattern: /(leading)-(.+)/,
         },

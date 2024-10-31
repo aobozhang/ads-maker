@@ -19,6 +19,7 @@ const { el_model, el_ctl } = inject('GLOBAL_CREATE_AND_EDIT');
 
 const vDraggable = (el, binding) => {
 
+    let mainEl = document.getElementById(binding.value);
     let rect = el.getBoundingClientRect();
 
     // 设置拖动元素的初始位置和尺寸
@@ -34,6 +35,14 @@ const vDraggable = (el, binding) => {
     el.ondragstart = () => false;
     el.addEventListener('mousedown', (e) => {
         isDown = true;
+
+        mainEl.classList.remove("silence");
+        mainEl.classList.add("!z-50");
+        let doms = document.getElementsByClassName("silence");
+        for (var dom of doms) {
+            dom.classList.add("pointer-events-none");
+        }
+
         elStartX = el.offsetLeft;
         elStartY = el.offsetTop;
         mouseStartX = e.pageX;
@@ -45,6 +54,14 @@ const vDraggable = (el, binding) => {
 
     const onMouseUp = () => {
         isDown = false;
+
+        let doms = document.getElementsByClassName("silence");
+        for (var dom of doms) {
+            dom.classList.remove("pointer-events-none");
+        }
+        mainEl.classList.add("silence");
+        mainEl.classList.remove("!z-50");
+
         _.set(item.value, `style`, el.style.cssText);
 
         el.removeEventListener('mousemove', onMouseMove);
@@ -94,11 +111,12 @@ watch(
 </script>
 
 <template>
-    <div @click="el_ctl.active(item)" v-draggable class="absolute select-none" :style="item.style" :class="[
-        { 'ring-1 ring-pink-100 ring-offset-4': isActived },
-        item.class,
-        'z-40'
-    ]">
+    <div @click="el_ctl.active(item)" :id="item.id" v-draggable="item.id"
+        class="absolute select-none silence base-silence" :style="item.style" :class="[
+            { 'ring-1 ring-pink-100 ring-offset-4': isActived },
+            item.class,
+            'z-30'
+        ]">
         <!-- configuration -->
         <Teleport defer to="#configContainer">
             <div v-if="isActived" class="flex flex-col h-full text-sm gap-y-4 py-4">

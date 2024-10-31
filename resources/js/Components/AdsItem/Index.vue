@@ -13,8 +13,6 @@ const props = defineProps({
 const data = computed(() => _.get(props.adsItems, 'data'));
 const pagi = computed(() => props.adsItems);
 
-console.log(data.value);
-
 const { el_ctl } = inject('GLOBAL_CREATE_AND_EDIT');
 
 
