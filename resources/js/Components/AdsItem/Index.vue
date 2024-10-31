@@ -65,7 +65,7 @@ const confirmReset = () => {
                 </transition-group>
             </div>
         </div>
-        <div class="w-full border-t-2 border-gray-300 border-dashed pt-4 grid items-center">
+        <div v-if="pagi.last_page > 1" class="w-full border-t-2 border-gray-300 border-dashed pt-4 grid items-center">
             <Pagination :pagi="pagi" class="mx-auto" />
         </div>
     </div>

@@ -5,6 +5,7 @@ import moment from 'moment'
 import _ from 'lodash-es';
 import { Link, useForm } from '@inertiajs/vue3';
 import Pagination from "@/Components/Pagination.vue";
+import { dataURItoBlob } from '@/Components/SubEl/func';
 
 const props = defineProps({
     list: {
@@ -101,8 +102,20 @@ onMounted(() => {
             <!-- main list -->
             <div class="grow p-8 h-full flex flex-col  bg-white">
                 <div class="grow flex flex-col gap-y-5">
+                    <div class="w-full border-b-2 border-gray-200 border-dashed pt-4 pb-8">
+                        <Link :href="route('ads-image.create')" title="新建"
+                            class="w-40 aspect-square rounded relative group grid items-center justify-center bg-gray-100 hover:bg-gray-50 drop-shadow">
+                        <svg class="w-16 group-disabled:stroke-gray-200 stroke-gray-300" viewBox="0 0 48 48" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M30 24H18M24 18V30M8 40V12C8 10.9391 8.42143 9.92172 9.17157 9.17157C9.92172 8.42143 10.9391 8 12 8H36C37.0609 8 38.0783 8.42143 38.8284 9.17157C39.5786 9.92172 40 10.9391 40 12V40M44 40H4"
+                                stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+
+                        </Link>
+                    </div>
                     <div v-for="(items, key, index) in catg" :key="key">
-                        <div class="w-full border-b border-gray-400 py-4">
+                        <div class="w-full border-b-2 border-gray-200 border-dashed pt-4 pb-8">
                             <h4 class="font-black text-2xl">{{ key }}</h4>
                         </div>
                         <div class="flex flex-row flex-wrap gap-5 py-4">
@@ -129,8 +142,10 @@ onMounted(() => {
                             </transition-group>
                         </div>
                     </div>
+
                 </div>
-                <div class="w-full border-t-2 border-gray-300 border-dashed pt-4 grid items-center">
+                <div v-if="pagi.last_page > 1"
+                    class="w-full border-t-2 border-gray-300 border-dashed pt-4 grid items-center">
                     <Pagination :pagi="pagi" class="mx-auto" />
                 </div>
             </div>
