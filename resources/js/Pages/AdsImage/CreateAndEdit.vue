@@ -526,7 +526,7 @@ onBeforeUnmount(() => {
 
             <!-- right side bar -->
             <div
-                class="w-64 bg-white shrink-0 grow-0 py-4 h-lvh border-l border-gray-300 text-gray-800 overflow-y-auto no-scrollbar overflow-x-hidden">
+                class="w-fit bg-white shrink-0 grow-0 py-4 h-lvh border-l border-gray-300 text-gray-800 overflow-y-auto no-scrollbar overflow-x-hidden">
                 <AdsItems :adsItems="adsItems"></AdsItems>
             </div>
         </div>

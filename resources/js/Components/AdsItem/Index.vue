@@ -32,16 +32,16 @@ const confirmReset = () => {
 </script>
 
 <template>
-    <div class="flex flex-col h-full">
+    <div class="w-64 flex flex-col h-full">
         <div>
             <h4 class="px-4">我的素材</h4>
         </div>
         <div class="grow w-full overflow-y-auto no-scrollbar">
-            <div class="w-full h-fit grid grid-cols-2 grid-flow-row gap-3 p-4 overflow-hidden no-scrollbar">
+            <div class="h-fit flex flex-row flex-wrap gap-2 py-4 px-2">
                 <transition-group name='list'>
                     <div v-for="(item, index) in data" :key="item.id" @mouseleave="confirmReset"
                         @click.self="el_ctl.addPicture(item)"
-                        class="relative w-full aspect-square bg-contain bg-no-repeat bg-center border border-dashed border-gray-200 rounded group"
+                        class="relative w-28 h-28 bg-contain bg-no-repeat bg-center border border-dashed border-gray-200 rounded group"
                         :style="`background-image:url(${item.url})`">
                         <div class="absolute right-1 top-1 flex flex-col">
                             <a @click.prevent="el_ctl.addMain(item)"
@@ -70,3 +70,28 @@ const confirmReset = () => {
         </div>
     </div>
 </template>
+<style lang="less">
+textarea,
+input {
+    @apply text-xs;
+}
+
+.list-move,
+/* 对移动中的元素应用的过渡 */
+.list-enter-active,
+.list-leave-active {
+    transition: all 0.5s ease;
+}
+
+.list-enter-from,
+.list-leave-to {
+    opacity: 0;
+    transform: scale(0);
+}
+
+/* 确保将离开的元素从布局流中删除
+  以便能够正确地计算移动的动画。 */
+.list-leave-active {
+    position: absolute;
+}
+</style>
