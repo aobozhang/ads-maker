@@ -46,7 +46,7 @@ const confirmReset = () => {
                         <div class="absolute right-1 top-1 flex flex-col">
                             <a @click.prevent="el_ctl.addMain(item)"
                                 class="cursor-pointer px-2 py-0.5 text-xs text-white bg-black/80 ring-1 ring-white rounded-sm group-hover:visible invisible">
-                                主图
+                                背景
                             </a>
                             <a target="_blank" :href="route('ads-item.down', item.id)"
                                 @click="newTab($event, route('ads-item.down', item.id))"

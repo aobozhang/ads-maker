@@ -455,12 +455,12 @@ onBeforeUnmount(() => {
 
             <!-- Main area -->
             <div class="grow p-4 relative h-lvh bg-indigo-100">
-
+                <!-- 添加入口 -->
                 <div
                     class="fixed top-40 z-40 text-center w-fit flex flex-col justify-center px-2 py-3 gap-y-1 select-none items-center bg-gray-50 rounded shadow-lg">
-                    <span class=" border-gray-200 text-xs text-gray-600 pb-2 shadow shadow-white">添加</span>
-                    <div @click="el_ctl.addText"
-                        class="w-8 text-xs aspect-square grid items-center text-center hover:bg-blue-200 hover:text-gray-800 text-gray-600 rounded">
+                    <span class="border-b border-gray-300 text-xs text-gray-400 pb-2 shadow shadow-white">添加</span>
+                    <a title="添加文本" @click="el_ctl.addText"
+                        class="w-8 pt-2 text-xs aspect-square grid items-center text-center hover:bg-blue-200 hover:text-gray-800 text-gray-600 rounded">
                         <span><svg class="w-8" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path
                                     d="M40 16H20C17.7909 16 16 17.7909 16 20V40C16 42.2091 17.7909 44 20 44H40C42.2091 44 44 42.2091 44 40V20C44 17.7909 42.2091 16 40 16Z"
@@ -470,8 +470,8 @@ onBeforeUnmount(() => {
                                     stroke="#757575" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
                         </span>
-                    </div>
-                    <div @click="el_ctl.addPicture"
+                    </a>
+                    <a title="添加图片" @click="el_ctl.addPicture"
                         class="w-8 text-xs aspect-square grid items-center text-center hover:bg-blue-200 hover:text-gray-800 text-gray-600 rounded">
                         <span><svg class="w-8" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path
@@ -487,8 +487,8 @@ onBeforeUnmount(() => {
                                     stroke="#757575" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
                         </span>
-                    </div>
-                    <div @click="el_ctl.addMain"
+                    </a>
+                    <a title="添加背景" @click="el_ctl.addMain"
                         class="w-8 text-xs aspect-square grid items-center text-center hover:bg-blue-200 hover:text-gray-800 text-gray-600 rounded">
                         <span><svg class="w-8" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path
@@ -498,7 +498,7 @@ onBeforeUnmount(() => {
                                     stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
                         </span>
-                    </div>
+                    </a>
                 </div>
 
                 <div
