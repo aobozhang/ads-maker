@@ -20,7 +20,7 @@ Route::middleware('auth')->prefix('/')->group(function () {
 });
 
 Route::get('/dashboard', function () {
-    return redirect()->route('ads-image.index');
+    return redirect()->route('Home');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
