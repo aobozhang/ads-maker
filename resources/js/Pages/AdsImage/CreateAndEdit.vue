@@ -247,6 +247,8 @@ function dataURItoBlob(dataURI) {
 
 const saveJpeg = async (query, forceCreate = false) => {
 
+    el_ctl.active(null);
+
     const node = document.querySelector(query);
 
     toJpeg(node, {
