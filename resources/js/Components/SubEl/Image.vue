@@ -174,6 +174,7 @@ const form = ref({
 const itemUpload = async (e) => {
 
     form.file = e.target.files[0];
+    form.refer = router.page.url;
 
     router.post(route('ads-item.store'), form, {
         forceFormData: true,
@@ -206,6 +207,7 @@ const saveJpeg = async () => {
         const blob = dataURItoBlob(dataUrl);
         form.file = blob;
         form.url = item.value.url;
+        form.refer = router.page.url;
 
         router.post(route('ads-item.store'), form, {
             forceFormData: true,

@@ -33,8 +33,9 @@ class AdsItemController extends Controller
      */
     public function store(Request $request)
     {
-        $name = Carbon::now()->format('Ymd-His-u');
-        $data = $request->except(['file']);
+        $name  = Carbon::now()->format('Ymd-His-u');
+        $refer = $request->input('refer');
+        $data  = $request->except(['file']);
 
         if ($request->has('url')) {
 
@@ -45,7 +46,7 @@ class AdsItemController extends Controller
                 ->first();
 
             if ($try) {
-                return back()->with('upload', $try);
+                return redirect($refer)->with('upload', $try);
             }
 
             $data['remote'] = $url;
@@ -69,7 +70,7 @@ class AdsItemController extends Controller
                     ]
                 );
 
-                return back()->with('upload', $adsItem);
+                return redirect($refer)->with('upload', $adsItem);
             }
 
             $path = $request->file('file')->storePubliclyAs(
@@ -85,7 +86,8 @@ class AdsItemController extends Controller
             $data['type'] = 'picture';
 
             $adsItem = $request->user()->ads_items()->create($data);
-            return back()->with('upload', $adsItem);
+
+            return redirect($refer)->with('upload', $adsItem);
         } else {
             return response(null, 500);
         }
