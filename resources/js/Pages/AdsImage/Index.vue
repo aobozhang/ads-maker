@@ -124,20 +124,28 @@ onMounted(() => {
                                     v-for="(item, index) in items" :key="item.id"
                                     class="w-40 aspect-square bg-contain bg-no-repeat bg-center border border-gray-100 rounded relative group"
                                     :style="`background-image:url(${item.url})`">
-                                <div class="absolute right-1 top-1 flex flex-row">
-                                    <a target="_blank" :href="route('ads-image.down', item.id)"
-                                        @click="newTab($event, route('ads-image.down', item.id))"
-                                        class="px-2 py-0.5 text-sm text-white bg-black/80 ring-1 ring-white rounded-sm group-hover:visible invisible">
-                                        下载
-                                    </a>
-                                    <button v-if="!confirmed(item.id)" @click.prevent="confirm(item.id)"
-                                        class="px-2 py-0.5 text-sm text-white bg-red-500/60 ring-1 ring-white rounded-sm group-hover:visible invisible">删除</button>
-                                    <Link v-else method="delete" :href="route('ads-image.destroy', item.id)"
-                                        :only="['list']" as="button" type="button"
-                                        class="px-2 py-0.5 text-sm text-white bg-red-500/90 ring-1 ring-white rounded-sm group-hover:visible invisible">
-                                    确认
-                                    </Link>
-                                </div>
+                                <transition name="list">
+                                    <div
+                                        class="absolute right-1 top-1 w-72 bg-contain bg-no-repeat bg-center flex flex-row group-hover:visible group-hover:delay-300 invisible shadow-lg bg-white">
+                                        <div class="relative w-full">
+                                            <img :src="item.url" alt="" class="object-cover">
+                                            <div class="absolute top-0 right-0 flex flex-row gap-x-0.5">
+                                                <a target="_blank" :href="route('ads-image.down', item.id)"
+                                                    @click="newTab($event, route('ads-image.down', item.id))"
+                                                    class="px-2 py-0.5 text-sm text-white bg-black/80 ring-1 ring-white rounded-sm">
+                                                    下载
+                                                </a>
+                                                <button v-if="!confirmed(item.id)" @click.prevent="confirm(item.id)"
+                                                    class="px-2 py-0.5 text-sm text-white bg-red-500/60 ring-1 ring-white rounded-sm">删除</button>
+                                                <Link v-else method="delete" :href="route('ads-image.destroy', item.id)"
+                                                    :only="['list']" as="button" type="button"
+                                                    class="px-2 py-0.5 text-sm text-white bg-red-500/90 ring-1 ring-white rounded-sm">
+                                                确认
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </transition>
                                 </Link>
                             </transition-group>
                         </div>
