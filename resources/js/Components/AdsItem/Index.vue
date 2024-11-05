@@ -119,8 +119,9 @@ const confirmReset = () => {
                             </Link>
                         </div>
                         <div class="absolute w-[20%] right-px top-px flex flex-row gap-x-px bg-white rounded">
-                            <Link v-if="item.status & (1 << 0)" method="put" :href="route('ads-item.fav', item.id)"
-                                as="button" type="button" title="移除收藏" class=" font-mono">
+                            <Link v-if="item.status & (1 << 0)" method="put" preserve-state
+                                :href="route('ads-item.fav', item.id)" as="button" type="button" title="移除收藏"
+                                class=" font-mono">
                             <svg class="w-full aspect-square" viewBox="0 0 48 48" fill="none"
                                 xmlns="http://www.w3.org/2000/svg">
                                 <path
@@ -128,8 +129,8 @@ const confirmReset = () => {
                                     fill="#F44336" />
                             </svg>
                             </Link>
-                            <Link v-else method="put" :href="route('ads-item.fav', item.id)" as="button" type="button"
-                                title="添加收藏" class=" font-mono">
+                            <Link v-else method="put" preserve-state :href="route('ads-item.fav', item.id)" as="button"
+                                type="button" title="添加收藏" class=" font-mono">
 
                             <svg class="w-full aspect-square stroke-gray-400" viewBox="0 0 48 48" fill="none"
                                 xmlns="http://www.w3.org/2000/svg">

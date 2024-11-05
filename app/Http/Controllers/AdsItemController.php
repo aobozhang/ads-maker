@@ -57,17 +57,19 @@ class AdsItemController extends Controller
             $file     = $request->file('file');
             $hash     = hash_file('sha256', $file);
             $filename = $hash . "." . ($request->file->extension() ?? 'jpg');
-            $path     = storage_path('app/public/ads-items/' . $filename);
+            $path     = 'ads-items/' . $filename;
 
-            if (file_exists($path)) {
-                return back()->with('upload', AdsItem::firstOrCreate(
-                    ['path' => $path],
+            if (file_exists(storage_path('app/public/' . $path))) {
+                $adsItem = $request->user()->ads_items()->firstOrCreate(
+                    ['path' => storage_path('app/public/' . $path)],
                     [
                         'url'  => asset('storage/' . $path),
                         'name' => $name,
-                        $data['type'] = 'picture',
+                        'type' => 'picture',
                     ]
-                ));
+                );
+
+                return back()->with('upload', $adsItem);
             }
 
             $path = $request->file('file')->storePubliclyAs(

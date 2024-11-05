@@ -134,7 +134,7 @@ onMounted(() => {
                                     :style="`background-image:url(${item.url})`">
                                 <!-- 默认fav status -->
                                 <div class="absolute top-1 right-1 w-10">
-                                    <Link v-if="item.status & (1 << 0)" method="put"
+                                    <Link v-if="item.status & (1 << 0)" method="put" preserve-state
                                         :href="route('ads-image.fav', item.id)" as="button" type="button" title="移除收藏"
                                         class=" font-mono text-xs text-white bg-transparent">
                                     <svg class="w-full aspect-square" viewBox="0 0 48 48" fill="none"
@@ -144,8 +144,9 @@ onMounted(() => {
                                             fill="#F44336" />
                                     </svg>
                                     </Link>
-                                    <Link v-else method="put" :href="route('ads-image.fav', item.id)" as="button"
-                                        type="button" title="添加收藏" class=" font-mono text-xs text-white bg-transparent">
+                                    <Link v-else method="put" preserve-state :href="route('ads-image.fav', item.id)"
+                                        as="button" type="button" title="添加收藏"
+                                        class=" font-mono text-xs text-white bg-transparent">
 
                                     <svg class="w-full aspect-square stroke-gray-400" viewBox="0 0 48 48" fill="none"
                                         xmlns="http://www.w3.org/2000/svg">
@@ -186,9 +187,9 @@ onMounted(() => {
                                                     </svg>
 
                                                 </button>
-                                                <Link v-else method="delete" :href="route('ads-image.destroy', item.id)"
-                                                    as="button" title="确认删除" type="button"
-                                                    class="text-xs text-white bg-red-500/90">
+                                                <Link v-else method="delete" preserve-state
+                                                    :href="route('ads-image.destroy', item.id)" as="button" title="确认删除"
+                                                    type="button" class="text-xs text-white bg-red-500/90">
                                                 <!-- delete-icon -->
                                                 <svg class="w-full aspect-square" viewBox="0 0 48 48" fill="none"
                                                     xmlns="http://www.w3.org/2000/svg">
@@ -198,7 +199,7 @@ onMounted(() => {
                                                 </svg>
                                                 </Link>
 
-                                                <Link v-if="item.status & (1 << 0)" method="put"
+                                                <Link v-if="item.status & (1 << 0)" method="put" preserve-state
                                                     :href="route('ads-image.fav', item.id)" as="button" type="button"
                                                     title="移除收藏" class=" font-mono text-xs text-white bg-transparent">
                                                 <svg class="w-full aspect-square" viewBox="0 0 48 48" fill="none"
@@ -208,9 +209,9 @@ onMounted(() => {
                                                         fill="#F44336" />
                                                 </svg>
                                                 </Link>
-                                                <Link v-else method="put" :href="route('ads-image.fav', item.id)"
-                                                    as="button" type="button" title="添加收藏"
-                                                    class=" font-mono text-xs text-white bg-transparent">
+                                                <Link v-else method="put" preserve-state
+                                                    :href="route('ads-image.fav', item.id)" as="button" type="button"
+                                                    title="添加收藏" class=" font-mono text-xs text-white bg-transparent">
 
                                                 <svg class="w-full aspect-square stroke-gray-400" viewBox="0 0 48 48"
                                                     fill="none" xmlns="http://www.w3.org/2000/svg">
