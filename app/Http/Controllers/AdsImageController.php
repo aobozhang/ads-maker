@@ -97,7 +97,7 @@ class AdsImageController extends Controller
         // 更新时间戳的方案
         // $adsImage->status = \toggleNumAtPosition($adsImage->status, 0);
         // $adsImage->save();
-        return back();
+        // return back();
     }
 
     /**
@@ -128,8 +128,7 @@ class AdsImageController extends Controller
 
         $adsImage->save();
 
-        return back();
-        // return redirect()->route('ads-image.show', $adsImage);
+        return redirect()->route('ads-image.show', $adsImage);
     }
 
     /**
