@@ -136,7 +136,7 @@ onMounted(() => {
                                 <div class="absolute top-1 right-1 w-10">
                                     <Link v-if="item.status & (1 << 0)" method="put"
                                         :href="route('ads-image.fav', item.id)" as="button" type="button" title="移除收藏"
-                                        class=" font-mono text-xs text-white bg-transparent ring-1 ring-white rounded-sm">
+                                        class=" font-mono text-xs text-white bg-transparent">
                                     <svg class="w-full aspect-square" viewBox="0 0 48 48" fill="none"
                                         xmlns="http://www.w3.org/2000/svg">
                                         <path
@@ -145,8 +145,7 @@ onMounted(() => {
                                     </svg>
                                     </Link>
                                     <Link v-else method="put" :href="route('ads-image.fav', item.id)" as="button"
-                                        type="button" title="添加收藏"
-                                        class=" font-mono text-xs text-white bg-transparent ring-1 ring-white rounded-sm">
+                                        type="button" title="添加收藏" class=" font-mono text-xs text-white bg-transparent">
 
                                     <svg class="w-full aspect-square stroke-gray-400" viewBox="0 0 48 48" fill="none"
                                         xmlns="http://www.w3.org/2000/svg">
@@ -166,7 +165,7 @@ onMounted(() => {
 
                                                 <a target="_blank" :href="route('ads-image.down', item.id)" title="下载素材"
                                                     @click="newTab($event, route('ads-image.down', item.id))"
-                                                    class="text-xs text-white bg-black/80 ring-1 ring-white rounded-sm">
+                                                    class="text-xs text-white bg-black/80">
                                                     <!-- download-icon -->
                                                     <svg class="w-full aspect-square" viewBox="0 0 48 48" fill="none"
                                                         xmlns="http://www.w3.org/2000/svg">
@@ -177,8 +176,7 @@ onMounted(() => {
                                                 </a>
 
                                                 <button v-if="!confirmed(item.id)" @click.prevent="confirm(item.id)"
-                                                    title="删除素材"
-                                                    class="text-xs text-white bg-red-500/60 ring-1 ring-white rounded-sm">
+                                                    title="删除素材" class="text-xs text-white bg-red-500/60">
                                                     <!-- delete-icon -->
                                                     <svg class="w-full aspect-square" viewBox="0 0 48 48" fill="none"
                                                         xmlns="http://www.w3.org/2000/svg">
@@ -190,7 +188,7 @@ onMounted(() => {
                                                 </button>
                                                 <Link v-else method="delete" :href="route('ads-image.destroy', item.id)"
                                                     as="button" title="确认删除" type="button"
-                                                    class="text-xs text-white bg-red-500/90 ring-1 ring-white rounded-sm">
+                                                    class="text-xs text-white bg-red-500/90">
                                                 <!-- delete-icon -->
                                                 <svg class="w-full aspect-square" viewBox="0 0 48 48" fill="none"
                                                     xmlns="http://www.w3.org/2000/svg">
@@ -202,8 +200,7 @@ onMounted(() => {
 
                                                 <Link v-if="item.status & (1 << 0)" method="put"
                                                     :href="route('ads-image.fav', item.id)" as="button" type="button"
-                                                    title="移除收藏"
-                                                    class=" font-mono text-xs text-white bg-transparent ring-1 ring-white rounded-sm">
+                                                    title="移除收藏" class=" font-mono text-xs text-white bg-transparent">
                                                 <svg class="w-full aspect-square" viewBox="0 0 48 48" fill="none"
                                                     xmlns="http://www.w3.org/2000/svg">
                                                     <path
@@ -213,7 +210,7 @@ onMounted(() => {
                                                 </Link>
                                                 <Link v-else method="put" :href="route('ads-image.fav', item.id)"
                                                     as="button" type="button" title="添加收藏"
-                                                    class=" font-mono text-xs text-white bg-transparent ring-1 ring-white rounded-sm">
+                                                    class=" font-mono text-xs text-white bg-transparent">
 
                                                 <svg class="w-full aspect-square stroke-gray-400" viewBox="0 0 48 48"
                                                     fill="none" xmlns="http://www.w3.org/2000/svg">

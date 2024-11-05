@@ -17,6 +17,7 @@ class AdsImage extends Model
         'url',
         'thumb',
         'config',
+        'status',
         'payload',
     ];
 

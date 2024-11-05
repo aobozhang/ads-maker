@@ -87,8 +87,16 @@ class AdsImageController extends Controller
      */
     public function fav(Request $request, AdsImage $adsImage)
     {
-        $adsImage->status = \toggleNumAtPosition($adsImage->status, 0);
-        $adsImage->save();
+        // 不更新时间戳的方案
+        \DB::table('ads_images')
+            ->where('id', $adsImage->id)
+            ->update([
+                'status' => \toggleNumAtPosition($adsImage->status, 0),
+            ]);
+
+        // 更新时间戳的方案
+        // $adsImage->status = \toggleNumAtPosition($adsImage->status, 0);
+        // $adsImage->save();
         return back();
     }
 

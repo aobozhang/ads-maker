@@ -132,9 +132,19 @@ class AdsItemController extends Controller
      */
     public function fav(Request $request, AdsItem $adsItem)
     {
-        $adsItem->status = \toggleNumAtPosition($adsItem->status, 0);
-        $adsItem->save();
-        return back();
+        // 更新时间戳的方案
+        // $adsItem->update(
+        //     ['status' => \toggleNumAtPosition($adsItem->status, 0)]
+        // );
+
+        // 不更新时间戳的方案
+        \DB::table('ads_items')
+            ->where('id', $adsItem->id)
+            ->update([
+                'status' => \toggleNumAtPosition($adsItem->status, 0),
+            ]);
+
+        // return back();
     }
 
     /**
