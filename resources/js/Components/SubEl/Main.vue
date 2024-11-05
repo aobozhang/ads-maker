@@ -88,7 +88,7 @@ const saveJpeg = async () => {
 </script>
 
 <template>
-    <div :class="item.class" class="absolute w-full h-full pointer-events-none"
+    <div :class="item.class" class="absolute w-full h-full pointer-events-none bg-center bg-no-repeat"
         :style="`background-image:url(${item.url})`">
 
         <!-- configuration -->
