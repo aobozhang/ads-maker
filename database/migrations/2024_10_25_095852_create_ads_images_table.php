@@ -21,7 +21,7 @@ return new class extends Migration
             $table->json('config')->nullable();
             $table->json('payload')->nullable();
             $table->boolean('is_share')->nullable()->default(false);
-            $table->string('status')->nullable();
+            $table->unsignedInteger('status')->nullable()->default(0);
             $table->softDeletes();
             $table->timestamps();
         });

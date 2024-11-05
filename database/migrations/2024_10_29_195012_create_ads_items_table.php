@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('remote')->nullable();
             $table->json('tags')->nullable();
             $table->json('payload')->nullable();
+            $table->unsignedInteger('status')->nullable()->default(0);
             $table->softDeletes();
             $table->timestamps();
         });

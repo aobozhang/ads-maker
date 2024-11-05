@@ -14,9 +14,11 @@ Route::get('/', function () {
 Route::middleware('auth')->prefix('/')->group(function () {
     Route::resource('/ads-image', AdsImageController::class);
     Route::get('/ads-image/{ads_image}/down', [AdsImageController::class, 'down'])->name('ads-image.down');
+    Route::put('/ads-image/{ads_image}/fav', [AdsImageController::class, 'fav'])->name('ads-image.fav');
 
     Route::resource('/ads-item', AdsItemController::class);
     Route::get('/ads-item/{ads_item}/down', [AdsItemController::class, 'down'])->name('ads-item.down');
+    Route::put('/ads-item/{ads_item}/fav', [AdsItemController::class, 'fav'])->name('ads-item.fav');
 });
 
 Route::get('/dashboard', function () {

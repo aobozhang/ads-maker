@@ -12,6 +12,10 @@ const props = defineProps({
         type: Object,
         default: {},
     },
+    favlist: {
+        type: Object,
+        default: {},
+    },
     item: {
         type: Object,
         default: {
@@ -29,7 +33,9 @@ const props = defineProps({
     },
 });
 
-const list = computed(() => _.get(props.list, 'data'));
+const showFav = ref(false);
+const list = computed(() => _.get(showFav.value ? props.favlist : props.list, 'data'));
+
 const updateDate = (item) => moment(item.updated_at, 'YYYY-MM-DD HH:mm:ss').format('YYYY-MM-DD');
 
 const catg = computed(() => _.groupBy(list.value, updateDate));
@@ -90,13 +96,15 @@ onMounted(() => {
         <div class="grow flex flex-row h-lvh justify-center w-full">
             <!-- left side bar -->
             <div class="w-64 shrink-0 grow-0 h-lvh pl-4 pt-16 border-r border-gray-300 flex flex-col gap-y-4 items-end">
-                <Link :href="route('ads-image.index')" class="py-4 pl-12 pr-8 text-right text-xl w-fit rounded-l -mr-px"
-                    :class="{ 'border-y border-l border-gray-300 bg-white': route().current('ads-image.index') }">
-                主页
-                </Link>
-                <div class="py-4 pl-12 pr-8 text-right text-xl w-fit rounded-l -mr-px text-gray-500"
-                    :class="{ 'border-y border-l border-gray-300 bg-white': route().current('ads-item.index') }">
-                    素材
+                <div @click="showFav = false" :href="route('ads-image.index')"
+                    class="py-4 pl-12 pr-8 text-right text-xl w-fit rounded-l -mr-px"
+                    :class="{ 'border-y border-l border-gray-300 bg-white': !showFav }">
+                    主页
+                </div>
+                <div @click="showFav = true"
+                    class="py-4 pl-12 pr-8 text-right text-xl w-fit rounded-l -mr-px text-gray-500"
+                    :class="{ 'border-y border-l border-gray-300 bg-white': showFav }">
+                    收藏
                 </div>
             </div>
             <!-- main list -->
@@ -116,33 +124,107 @@ onMounted(() => {
                     </div>
                     <div v-for="(items, key, index) in catg" :key="key">
                         <div class="w-full border-b-2 border-gray-200 border-dashed pt-4 pb-8">
-                            <h4 class="font-black text-2xl">{{ key }}</h4>
+                            <h4 class="font-black text-2xl"><span v-if="showFav">收藏日期：</span>{{ key }}</h4>
                         </div>
                         <div class="flex flex-row flex-wrap gap-5 py-4">
                             <transition-group name='list'>
                                 <Link @mouseleave="confirmReset" :href="route('ads-image.show', item.id)"
-                                    v-for="(item, index) in items" :key="item.id"
+                                    v-for="(item, index) in items" :key="item.id" title="编辑"
                                     class="w-40 aspect-square bg-contain bg-no-repeat bg-center border border-gray-100 rounded relative group"
                                     :style="`background-image:url(${item.url})`">
+                                <!-- 默认fav status -->
+                                <div class="absolute top-1 right-1 w-10">
+                                    <Link v-if="item.status & (1 << 0)" method="put"
+                                        :href="route('ads-image.fav', item.id)" as="button" type="button" title="移除收藏"
+                                        class=" font-mono text-xs text-white bg-transparent ring-1 ring-white rounded-sm">
+                                    <svg class="w-full aspect-square" viewBox="0 0 48 48" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M34 9C29.8 9 26.1 11.1 24 14.4C21.9 11.1 18.2 9 14 9C7.4 9 2 14.4 2 21C2 32.9 24 45 24 45C24 45 46 33 46 21C46 14.4 40.6 9 34 9Z"
+                                            fill="#F44336" />
+                                    </svg>
+                                    </Link>
+                                    <Link v-else method="put" :href="route('ads-image.fav', item.id)" as="button"
+                                        type="button" title="添加收藏"
+                                        class=" font-mono text-xs text-white bg-transparent ring-1 ring-white rounded-sm">
+
+                                    <svg class="w-full aspect-square stroke-gray-400" viewBox="0 0 48 48" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M15 8C8.925 8 4 12.925 4 19C4 30 17 40 24 42.326C31 40 44 30 44 19C44 12.925 39.075 8 33 8C29.28 8 25.99 9.847 24 12.674C22.9855 11.2294 21.6379 10.0504 20.0714 9.23683C18.5048 8.42325 16.7653 7.999 15 8Z"
+                                            stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    </Link>
+                                </div>
                                 <transition name="list">
                                     <div
                                         class="absolute right-1 top-1 w-72 bg-contain bg-no-repeat bg-center flex flex-row group-hover:visible group-hover:delay-300 invisible shadow-lg bg-white">
                                         <div class="relative w-full">
                                             <img :src="item.url" alt="" class="object-cover">
-                                            <div class="absolute top-0 right-0 flex flex-row gap-x-0.5">
-                                                <a target="_blank" :href="route('ads-image.down', item.id)"
+                                            <!-- 操作icon组 -->
+                                            <div class="absolute top-0 right-0 w-32 flex flex-row gap-x-0.5">
+
+                                                <a target="_blank" :href="route('ads-image.down', item.id)" title="下载素材"
                                                     @click="newTab($event, route('ads-image.down', item.id))"
-                                                    class="px-2 py-0.5 text-sm text-white bg-black/80 ring-1 ring-white rounded-sm">
-                                                    下载
+                                                    class="text-xs text-white bg-black/80 ring-1 ring-white rounded-sm">
+                                                    <!-- download-icon -->
+                                                    <svg class="w-full aspect-square" viewBox="0 0 48 48" fill="none"
+                                                        xmlns="http://www.w3.org/2000/svg">
+                                                        <path
+                                                            d="M24 32L14 22L16.8 19.1L22 24.3V8H26V24.3L31.2 19.1L34 22L24 32ZM12 40C10.9 40 9.95867 39.6087 9.176 38.826C8.39333 38.0433 8.00133 37.1013 8 36V30H12V36H36V30H40V36C40 37.1 39.6087 38.042 38.826 38.826C38.0433 39.61 37.1013 40.0013 36 40H12Z"
+                                                            fill="currentColor" />
+                                                    </svg>
                                                 </a>
+
                                                 <button v-if="!confirmed(item.id)" @click.prevent="confirm(item.id)"
-                                                    class="px-2 py-0.5 text-sm text-white bg-red-500/60 ring-1 ring-white rounded-sm">删除</button>
+                                                    title="删除素材"
+                                                    class="text-xs text-white bg-red-500/60 ring-1 ring-white rounded-sm">
+                                                    <!-- delete-icon -->
+                                                    <svg class="w-full aspect-square" viewBox="0 0 48 48" fill="none"
+                                                        xmlns="http://www.w3.org/2000/svg">
+                                                        <path
+                                                            d="M14 42C12.9 42 11.9587 41.6087 11.176 40.826C10.3933 40.0433 10.0013 39.1013 10 38V12H8V8H18V6H30V8H40V12H38V38C38 39.1 37.6087 40.042 36.826 40.826C36.0433 41.61 35.1013 42.0013 34 42H14ZM34 12H14V38H34V12ZM18 34H22V16H18V34ZM26 34H30V16H26V34Z"
+                                                            fill="currentColor" />
+                                                    </svg>
+
+                                                </button>
                                                 <Link v-else method="delete" :href="route('ads-image.destroy', item.id)"
-                                                    :only="['list']" as="button" type="button"
-                                                    class="px-2 py-0.5 text-sm text-white bg-red-500/90 ring-1 ring-white rounded-sm">
-                                                确认
+                                                    as="button" title="确认删除" type="button"
+                                                    class="text-xs text-white bg-red-500/90 ring-1 ring-white rounded-sm">
+                                                <!-- delete-icon -->
+                                                <svg class="w-full aspect-square" viewBox="0 0 48 48" fill="none"
+                                                    xmlns="http://www.w3.org/2000/svg">
+                                                    <path
+                                                        d="M14 42C12.9 42 11.9587 41.6087 11.176 40.826C10.3933 40.0433 10.0013 39.1013 10 38V12H8V8H18V6H30V8H40V12H38V38C38 39.1 37.6087 40.042 36.826 40.826C36.0433 41.61 35.1013 42.0013 34 42H14ZM34 12H14V38H34V12ZM18 34H22V16H18V34ZM26 34H30V16H26V34Z"
+                                                        fill="currentColor" />
+                                                </svg>
+                                                </Link>
+
+                                                <Link v-if="item.status & (1 << 0)" method="put"
+                                                    :href="route('ads-image.fav', item.id)" as="button" type="button"
+                                                    title="移除收藏"
+                                                    class=" font-mono text-xs text-white bg-transparent ring-1 ring-white rounded-sm">
+                                                <svg class="w-full aspect-square" viewBox="0 0 48 48" fill="none"
+                                                    xmlns="http://www.w3.org/2000/svg">
+                                                    <path
+                                                        d="M34 9C29.8 9 26.1 11.1 24 14.4C21.9 11.1 18.2 9 14 9C7.4 9 2 14.4 2 21C2 32.9 24 45 24 45C24 45 46 33 46 21C46 14.4 40.6 9 34 9Z"
+                                                        fill="#F44336" />
+                                                </svg>
+                                                </Link>
+                                                <Link v-else method="put" :href="route('ads-image.fav', item.id)"
+                                                    as="button" type="button" title="添加收藏"
+                                                    class=" font-mono text-xs text-white bg-transparent ring-1 ring-white rounded-sm">
+
+                                                <svg class="w-full aspect-square stroke-gray-400" viewBox="0 0 48 48"
+                                                    fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path
+                                                        d="M15 8C8.925 8 4 12.925 4 19C4 30 17 40 24 42.326C31 40 44 30 44 19C44 12.925 39.075 8 33 8C29.28 8 25.99 9.847 24 12.674C22.9855 11.2294 21.6379 10.0504 20.0714 9.23683C18.5048 8.42325 16.7653 7.999 15 8Z"
+                                                        stroke-width="4" stroke-linecap="round"
+                                                        stroke-linejoin="round" />
+                                                </svg>
                                                 </Link>
                                             </div>
+
                                         </div>
                                     </div>
                                 </transition>

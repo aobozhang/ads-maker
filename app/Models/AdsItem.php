@@ -30,7 +30,7 @@ class AdsItem extends Model
      * Get the user that owns the AdsImage
      *
      */
-    public function user(): BelongsTo
+    public function user()
     {
         return $this->belongsTo(User::class);
     }

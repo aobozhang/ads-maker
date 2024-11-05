@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AdsImage;
 use App\Models\AdsItem;
+use Arr;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -18,7 +19,8 @@ class AdsImageController extends Controller
     public function index(Request $request)
     {
         return Inertia::render('AdsImage/Index', [
-            'list' => fn() => AdsImage::orderBy('updated_at', 'desc')->paginate(30),
+            'list'    => fn()    => AdsImage::where('user_id', $request->user()->id)->orderBy('updated_at', 'desc')->paginate(30),
+            'favlist' => fn() => AdsImage::where('user_id', $request->user()->id)->where('status', '&', (1 << 0))->orderBy('updated_at', 'desc')->paginate(30),
         ]);
     }
 
@@ -29,6 +31,7 @@ class AdsImageController extends Controller
     {
         return Inertia::render('AdsImage/CreateAndEdit', [
             'adsItems' => fn() => AdsItem::where('user_id', $request->user()->id)->paginate(30),
+            'favItems' => fn() => AdsItem::where('user_id', $request->user()->id)->where('status', '&', (1 << 0))->paginate(30),
         ]);
     }
 
@@ -66,6 +69,7 @@ class AdsImageController extends Controller
     {
         return Inertia::render('AdsImage/CreateAndEdit', [
             'adsItems' => fn() => AdsItem::where('user_id', $request->user()->id)->paginate(30),
+            'favItems' => fn() => AdsItem::where('user_id', $request->user()->id)->where('status', '&', (1 << 0))->paginate(30),
             'item'     => $adsImage,
         ]);
     }
@@ -76,6 +80,16 @@ class AdsImageController extends Controller
     public function down(AdsImage $adsImage)
     {
         return response()->download($adsImage->path, $adsImage->name);
+    }
+
+    /**
+     * fav the specified resource image.
+     */
+    public function fav(Request $request, AdsImage $adsImage)
+    {
+        $adsImage->status = \toggleNumAtPosition($adsImage->status, 0);
+        $adsImage->save();
+        return back();
     }
 
     /**
@@ -106,7 +120,8 @@ class AdsImageController extends Controller
 
         $adsImage->save();
 
-        return redirect()->route('ads-image.show', $adsImage);
+        return back();
+        // return redirect()->route('ads-image.show', $adsImage);
     }
 
     /**

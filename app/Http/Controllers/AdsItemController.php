@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\AdsItem;
+use Arr;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class AdsItemController extends Controller
 {
@@ -14,7 +16,8 @@ class AdsItemController extends Controller
      */
     public function index(Request $request)
     {
-        return AdsItem::where('user_id', $request->user()->id)->paginate(30);
+        return AdsItem::where('user_id', $request->user()->id)
+            ->with('user')->paginate(30);
     }
 
     /**
@@ -51,15 +54,30 @@ class AdsItemController extends Controller
 
         if ($request->hasFile('file')) {
 
-            $name .= "." . ($request->file->extension() ?? 'jpg');
+            $file     = $request->file('file');
+            $hash     = hash_file('sha256', $file);
+            $filename = $hash . "." . ($request->file->extension() ?? 'jpg');
+            $path     = storage_path('app/public/ads-items/' . $filename);
+
+            if (file_exists($path)) {
+                return back()->with('upload', AdsItem::firstOrCreate(
+                    ['path' => $path],
+                    [
+                        'url'  => asset('storage/' . $path),
+                        'name' => $name,
+                        $data['type'] = 'picture',
+                    ]
+                ));
+            }
 
             $path = $request->file('file')->storePubliclyAs(
                 'ads-items',
-                $name,
+                $filename,
                 'public'
             );
 
             $data['path'] = storage_path('app/public/' . $path);
+
             $data['url']  = asset('storage/' . $path);
             $data['name'] = $name;
             $data['type'] = 'picture';
@@ -106,9 +124,17 @@ class AdsItemController extends Controller
      */
     public function down(AdsItem $adsItem)
     {
-        \Log::info($adsItem);
-
         return response()->download($adsItem->path);
+    }
+
+    /**
+     * fav the specified resource image.
+     */
+    public function fav(Request $request, AdsItem $adsItem)
+    {
+        $adsItem->status = \toggleNumAtPosition($adsItem->status, 0);
+        $adsItem->save();
+        return back();
     }
 
     /**
@@ -141,7 +167,6 @@ class AdsItemController extends Controller
     public function destroy(AdsItem $adsItem)
     {
         $adsItem->delete();
-
         return back();
     }
 }

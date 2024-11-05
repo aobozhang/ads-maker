@@ -15,13 +15,23 @@ const props = defineProps({
         type: Object,
         default: {},
     },
+    favItems: {
+        type: Object,
+        default: {},
+    },
     item: {
         type: Object,
         default: {},
     },
 });
+console.log(props.item);
 
 const adsItems = computed(() => props.adsItems);
+const favItems = computed(() => props.favItems);
+console.log('Normal', adsItems.value);
+console.log("favrit", favItems.value);
+const showFav = ref(false);
+const sideItems = computed(() => showFav.value ? props.favItems : props.adsItems);
 
 const el_model = ref(props.item?.config ?? {
     base: {
@@ -42,8 +52,9 @@ const el_model = ref(props.item?.config ?? {
     data: []
 });
 
-const base = ref();
-const data = ref();
+const base = ref(_.get(props.item, 'config.base', {}));
+const data = ref(_.get(props.item, 'config.data', []));
+
 watch(
     base,
     (n, o) => {
@@ -105,7 +116,7 @@ const el_ctl = {
         el_ctl.cache(true);
 
     },
-    addPicture: (config = null) => {
+    addPicture: async (config = null) => {
 
         let el = {
             id: uuidv4(),
@@ -124,6 +135,9 @@ const el_ctl = {
 
 
         data.value.push(el);
+
+        await nextTick();
+
         el_ctl.active(el);
         el_ctl.cache(true);
     },
@@ -153,6 +167,7 @@ const el_ctl = {
 
     updateBase: (key, value) => {
         _.set(base.value, key, value);
+        el_ctl.cache(true);
     },
 
     updateData: (id, val, key = null) => {
@@ -540,7 +555,12 @@ onBeforeUnmount(() => {
             <!-- right side bar -->
             <div
                 class="w-fit bg-white shrink-0 grow-0 py-4 h-lvh border-l border-gray-300 text-gray-800 overflow-y-auto no-scrollbar overflow-x-hidden">
-                <AdsItems :adsItems="adsItems"></AdsItems>
+                <div class="flex flex-row items-center pr-4">
+                    <h4 class="px-4 grow">我的素材</h4>
+                    <input type="checkbox" v-model="showFav" id="showFav" />
+                    <label for="showFav" class="text-sm">仅显示收藏</label>
+                </div>
+                <AdsItems :adsItems="sideItems"></AdsItems>
             </div>
         </div>
     </AuthenticatedLayout>
