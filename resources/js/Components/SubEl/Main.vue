@@ -47,7 +47,6 @@ const itemUpload = async (e) => {
 
     router.post(route('ads-item.store'), form, {
         forceFormData: true,
-        replace: true,
         onSuccess: (page) => {
             item.value.url = page.props.flash?.upload?.url;
         }
@@ -79,7 +78,6 @@ const saveJpeg = async () => {
 
         router.post(route('ads-item.store'), form, {
             forceFormData: true,
-            replace: true,
             onSuccess: (page) => {
                 item.value.url = page.props.flash?.upload?.url;
             }
